@@ -37,10 +37,9 @@ public class Drawable2d {
             0.0f, 1.0f,     // 1 bottom left
             1.0f, 1.0f,     // 2 bottom right
     };
-    private static final FloatBuffer TRIANGLE_BUF =
-            GlUtil.createFloatBuffer(TRIANGLE_COORDS);
-    private static final FloatBuffer TRIANGLE_TEX_BUF =
-            GlUtil.createFloatBuffer(TRIANGLE_TEX_COORDS);
+    //below are the buffers holding the vertices
+    private static final FloatBuffer TRIANGLE_BUF = GlUtil.createFloatBuffer(TRIANGLE_COORDS);
+    private static final FloatBuffer TRIANGLE_TEX_BUF = GlUtil.createFloatBuffer(TRIANGLE_TEX_COORDS);
 
     /**
      * Simple square, specified as a triangle strip.  The square is centered on (0,0) and has
@@ -60,10 +59,8 @@ public class Drawable2d {
             0.0f, 0.0f,     // 2 top left
             1.0f, 0.0f      // 3 top right
     };
-    private static final FloatBuffer RECTANGLE_BUF =
-            GlUtil.createFloatBuffer(RECTANGLE_COORDS);
-    private static final FloatBuffer RECTANGLE_TEX_BUF =
-            GlUtil.createFloatBuffer(RECTANGLE_TEX_COORDS);
+    private static final FloatBuffer RECTANGLE_BUF = GlUtil.createFloatBuffer(RECTANGLE_COORDS);
+    private static final FloatBuffer RECTANGLE_TEX_BUF = GlUtil.createFloatBuffer(RECTANGLE_TEX_COORDS);
 
     /**
      * A "full" square, extending from -1 to +1 in both dimensions.  When the model/view/projection
@@ -84,10 +81,8 @@ public class Drawable2d {
             0.0f, 1.0f,     // 2 top left
             1.0f, 1.0f      // 3 top right
     };
-    private static final FloatBuffer FULL_RECTANGLE_BUF =
-            GlUtil.createFloatBuffer(FULL_RECTANGLE_COORDS);
-    private static final FloatBuffer FULL_RECTANGLE_TEX_BUF =
-            GlUtil.createFloatBuffer(FULL_RECTANGLE_TEX_COORDS);
+    private static final FloatBuffer FULL_RECTANGLE_BUF = GlUtil.createFloatBuffer(FULL_RECTANGLE_COORDS);
+    private static final FloatBuffer FULL_RECTANGLE_TEX_BUF = GlUtil.createFloatBuffer(FULL_RECTANGLE_TEX_COORDS);
 
 
     private FloatBuffer mVertexArray;

@@ -171,7 +171,9 @@ public class GlUtil {
     public static FloatBuffer createFloatBuffer(float[] coords) {
         // Allocate a direct ByteBuffer, using 4 bytes per float, and copy coords into it.
         ByteBuffer bb = ByteBuffer.allocateDirect(coords.length * SIZEOF_FLOAT);
+        // order in which all vertices should be drawn
         bb.order(ByteOrder.nativeOrder());
+        //allocates the memory from the byte buffer
         FloatBuffer fb = bb.asFloatBuffer();
         fb.put(coords);
         fb.position(0);

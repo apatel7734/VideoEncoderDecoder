@@ -316,7 +316,7 @@ public class MoviePlayer {
                     ByteBuffer inputBuf = decoderInputBuffers[inputBufIndex];
                     // Read the sample data into the ByteBuffer.  This neither respects nor
                     // updates inputBuf's position, limit, etc.
-                    Log.d(TAG, "input Done ByteBuffer = " + inputBuf);
+                    //Log.d(TAG, "input Done ByteBuffer = " + inputBuf);
                     int chunkSize = extractor.readSampleData(inputBuf, 0);
                     if (chunkSize < 0) {
                         // End of stream -- send empty frame with EOS flag set.
@@ -332,8 +332,7 @@ public class MoviePlayer {
                         long presentationTimeUs = extractor.getSampleTime();
                         decoder.queueInputBuffer(inputBufIndex, 0, chunkSize, presentationTimeUs, 0 /*flags*/);
                         if (VERBOSE) {
-                            Log.d(TAG, "submitted frame " + inputChunk + " to dec, size=" +
-                                    chunkSize);
+                            Log.d(TAG, "submitted frame " + inputChunk + " to dec, size=" + chunkSize);
                         }
                         inputChunk++;
                         extractor.advance();

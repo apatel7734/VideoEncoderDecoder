@@ -40,6 +40,5 @@ public class SurfaceHandler extends Handler {
                 break;
             }
         }
-
     }
 }

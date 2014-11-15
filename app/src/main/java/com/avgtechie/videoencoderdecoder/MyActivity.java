@@ -2,7 +2,6 @@ package com.avgtechie.videoencoderdecoder;
 
 import android.app.Activity;
 import android.graphics.SurfaceTexture;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
@@ -14,20 +13,18 @@ import java.io.File;
 public class MyActivity extends Activity implements MoviePlayer.PlayerFeedback, SurfaceTexture.OnFrameAvailableListener {
 
     private static final String TAG = "MyActivity";
-    private GLSurfaceView mMainSurfaceView;
-    private SurfaceRenderer mSurfaceRenderer;
+    private MainSurfaceView mMainSurfaceView;
     private MoviePlayer.PlayTask mPlayTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my);
-        SurfaceHandler surfaceHandler = new SurfaceHandler(this);
-        mMainSurfaceView = (GLSurfaceView) findViewById(R.id.main_surfaceView);
-        mMainSurfaceView.setEGLContextClientVersion(2);
-        mSurfaceRenderer = new SurfaceRenderer(surfaceHandler);
-        mMainSurfaceView.setRenderer(mSurfaceRenderer);
-        mMainSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        mMainSurfaceView = (MainSurfaceView) findViewById(R.id.main_surfaceView);
+        //mMainSurfaceView.setEGLContextClientVersion(2);
+        //mSurfaceRenderer = new SurfaceRenderer(surfaceHandler);
+        //mMainSurfaceView.setRenderer(mSurfaceRenderer);
+        //mMainSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         File videoOutputFile = FileUtil.getInstance().getOutputFile(this);
     }
 
@@ -106,7 +103,7 @@ public class MyActivity extends Activity implements MoviePlayer.PlayerFeedback, 
 
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        Log.d(TAG, "onFrameAvailable");
+        //Log.d(TAG, "onFrameAvailable");
         mMainSurfaceView.requestRender();
     }
 }

@@ -29,6 +29,10 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private SquareWithMemeTexture squareWithMemeTexture;
 
     private float mAngle;
+    private float mScaleFactor = .4f;
+    private float mRotationDegrees = 0.3f;
+    private float mX;
+    private float mY;
 
     private int surfaceWidth;
     private int surfaceHeight;
@@ -40,6 +44,8 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private final float[] mProjectionMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
     private final float[] mRotationMatrix = new float[16];
+    private final float[] mScaleMatrix = new float[16];
+    private final float[] mFinalMatrix = new float[16];
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -48,7 +54,6 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         mTextureId = mFullScreen.createTextureObject();
         mSurfaceTexture = new SurfaceTexture(mTextureId);
         mSurfaceHandler.sendMessage(mSurfaceHandler.obtainMessage(SurfaceHandler.MSG_SET_SURFACE_TEXTURE, mSurfaceTexture));
-
         squareWithMemeTexture = new SquareWithMemeTexture();
     }
 
@@ -58,22 +63,35 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         surfaceHeight = height;
         surfaceWidth = width;
         float ratio = (float) width / height;
-        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+        //Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+        Matrix.orthoM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
         Log.d(TAG, String.format("Width = %d and Height = %d", width, height));
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        Log.d(TAG, "onDrawFrame");
+
         setupDefaultDrawing();
         // draw decoded frame on surfacetexture
         mSurfaceTexture.updateTexImage();
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
         mFullScreen.drawFrame(mTextureId, mSTMatrix);
-        //draw another layer of bitmap
-        squareWithMemeTexture.draw(mMVPMatrix);
 
-        Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, 1.0f);
+        /*
+        * draw another layer of bitmap
+        */
+        //add rotation
+        Matrix.setRotateM(mRotationMatrix, 0, mRotationDegrees, 0, 0, 1.0f);
+        Matrix.multiplyMM(mFinalMatrix, 0, mMVPMatrix, 0, mRotationMatrix, 0);
+        //Log.d(TAG, "Rotation Degree = " + mRotationDegrees);
+        Matrix.setIdentityM(mScaleMatrix, 0);
+        Matrix.scaleM(mScaleMatrix, 0, mScaleFactor, mScaleFactor, 0);
+        Matrix.multiplyMM(mFinalMatrix, 0, mFinalMatrix, 0, mScaleMatrix, 0);
+
+        // add translation
+        //Matrix.setIdentityM(scratch, 0);
+        //Matrix.translateM(scratch, 0, 0.0f, 0.0f, 0);
+        squareWithMemeTexture.draw(mFinalMatrix);
         //drawBox();
     }
 
@@ -114,5 +132,29 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
     public void setAngle(float angle) {
         mAngle = angle;
+    }
+
+    public float getY() {
+        return mY;
+    }
+
+    public void setY(float y) {
+        this.mY = y;
+    }
+
+    public float getX() {
+        return mX;
+    }
+
+    public void setX(float x) {
+        this.mX = x;
+    }
+
+    public void setScaleFactor(float mScaleFactor) {
+        this.mScaleFactor = mScaleFactor;
+    }
+
+    public void setRotationDegrees(float rotationDegree) {
+        this.mRotationDegrees = rotationDegree;
     }
 }

@@ -28,7 +28,6 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
     private SquareWithMemeTexture squareWithMemeTexture;
 
-    private float mAngle;
     private float mScaleFactor = .4f;
     private float mRotationDegrees = 0.3f;
     private float mX;
@@ -45,6 +44,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private final float[] mViewMatrix = new float[16];
     private final float[] mRotationMatrix = new float[16];
     private final float[] mScaleMatrix = new float[16];
+    private final float[] mTranslationMatrix = new float[16];
     private final float[] mFinalMatrix = new float[16];
 
     @Override
@@ -80,6 +80,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         /*
         * draw another layer of bitmap
         */
+
         //add rotation
         Matrix.setRotateM(mRotationMatrix, 0, mRotationDegrees, 0, 0, 1.0f);
         Matrix.multiplyMM(mFinalMatrix, 0, mMVPMatrix, 0, mRotationMatrix, 0);
@@ -89,8 +90,10 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(mFinalMatrix, 0, mFinalMatrix, 0, mScaleMatrix, 0);
 
         // add translation
-        //Matrix.setIdentityM(scratch, 0);
-        //Matrix.translateM(scratch, 0, 0.0f, 0.0f, 0);
+        Matrix.setIdentityM(mTranslationMatrix, 0);
+        Log.d(TAG, String.format("mX = %.2f, mY = %.2f", mX, mY));
+        Matrix.translateM(mTranslationMatrix, 0, -mX / surfaceWidth, -mY / surfaceHeight, 0);
+        Matrix.multiplyMM(mFinalMatrix, 0, mFinalMatrix, 0, mTranslationMatrix, 0);
         squareWithMemeTexture.draw(mFinalMatrix);
         //drawBox();
     }
@@ -126,24 +129,8 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         return shader;
     }
 
-    public float getAngle() {
-        return mAngle;
-    }
-
-    public void setAngle(float angle) {
-        mAngle = angle;
-    }
-
-    public float getY() {
-        return mY;
-    }
-
     public void setY(float y) {
         this.mY = y;
-    }
-
-    public float getX() {
-        return mX;
     }
 
     public void setX(float x) {

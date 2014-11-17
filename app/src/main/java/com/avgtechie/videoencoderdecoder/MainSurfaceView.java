@@ -1,12 +1,14 @@
 package com.avgtechie.videoencoderdecoder;
 
 import android.content.Context;
+import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
+import com.almeros.android.multitouch.MoveGestureDetector;
 import com.almeros.android.multitouch.RotateGestureDetector;
 
 /**
@@ -23,8 +25,12 @@ public class MainSurfaceView extends GLSurfaceView {
 
     private float mScaleFactor = .4f;
     private float mRotationDegrees = 0.f;
+    private float mFocusX = 0.f;
+    private float mFocusY = 0.f;
+
     private ScaleGestureDetector mScaleDetector;
     private RotateGestureDetector mRotateDetector;
+    private MoveGestureDetector mMoveDetector;
 
     public MainSurfaceView(Context context) {
         super(context);
@@ -49,7 +55,7 @@ public class MainSurfaceView extends GLSurfaceView {
 
         mScaleDetector = new ScaleGestureDetector(this.getContext(), new ScaleListener());
         mRotateDetector = new RotateGestureDetector(this.getContext(), new RotateListener());
-
+        mMoveDetector = new MoveGestureDetector(this.getContext(), new MoveListener());
 
     }
 
@@ -96,35 +102,12 @@ public class MainSurfaceView extends GLSurfaceView {
 
             mScaleDetector.onTouchEvent(event);
             mRotateDetector.onTouchEvent(event);
-            if (event.getPointerCount() == 1) {
-                float x = event.getX();
-                float y = event.getY();
-
-                if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    if (mRenderer != null) {
-                        float deltaX = (x - mPreviousX) / this.getWidth() * 360;
-                        float deltaY = (y - mPreviousY) / this.getHeight() * 360;
-                        float tempX = mRenderer.getX() + deltaY;
-                        float tempY = mRenderer.getY() + deltaX;
-                        mRenderer.setX(tempX);
-                        mRenderer.setY(tempY);
-                    }
-                }
-                mPreviousX = x;
-                mPreviousY = y;
-            } else if (event.getPointerCount() == 2) {
-                float dx = event.getX(1) - event.getX(0);
-                float dy = event.getY(1) - event.getY(0);
-                float deg = (float) Math.toDegrees(Math.atan2(dy, dx));
-                if (event.getAction() != MotionEvent.ACTION_MOVE) {
-                    mPreviousX = event.getX();
-                    mPreviousY = event.getY();
-                    return true;
-                }
-            }
+            mMoveDetector.onTouchEvent(event);
 
             mRenderer.setScaleFactor(mScaleFactor);
             mRenderer.setRotationDegrees(mRotationDegrees);
+            mRenderer.setX(mFocusX);
+            mRenderer.setY(mFocusY);
             requestRender();
         }
         return true;
@@ -146,6 +129,16 @@ public class MainSurfaceView extends GLSurfaceView {
         @Override
         public boolean onRotate(RotateGestureDetector detector) {
             mRotationDegrees -= detector.getRotationDegreesDelta();
+            return true;
+        }
+    }
+
+    private class MoveListener extends MoveGestureDetector.SimpleOnMoveGestureListener {
+        @Override
+        public boolean onMove(MoveGestureDetector detector) {
+            PointF d = detector.getFocusDelta();
+            mFocusX += d.x;
+            mFocusY += d.y;
             return true;
         }
     }

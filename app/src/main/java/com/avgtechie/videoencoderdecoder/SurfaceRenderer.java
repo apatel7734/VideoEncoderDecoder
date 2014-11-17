@@ -45,7 +45,9 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private final float[] mRotationMatrix = new float[16];
     private final float[] mScaleMatrix = new float[16];
     private final float[] mTranslationMatrix = new float[16];
-    private final float[] mFinalMatrix = new float[16];
+    private float[] mFinalMatrix = new float[16];
+    private float[] mModelMatrix = new float[16];
+    private float[] mTempMatrix = new float[16];
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -63,8 +65,8 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         surfaceHeight = height;
         surfaceWidth = width;
         float ratio = (float) width / height;
-        //Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
-        Matrix.orthoM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+        //Matrix.orthoM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
         Log.d(TAG, String.format("Width = %d and Height = %d", width, height));
     }
 
@@ -77,24 +79,42 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
         mFullScreen.drawFrame(mTextureId, mSTMatrix);
 
-        /*
-        * draw another layer of bitmap
-        */
+        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.translateM(mModelMatrix, 0, mX / surfaceWidth, -mY / surfaceHeight, 0);
+
+        Matrix.setRotateM(mRotationMatrix, 0, mRotationDegrees, 0, 0, -1.0f);
+        mTempMatrix = mModelMatrix.clone();
+        Matrix.multiplyMM(mModelMatrix, 0, mTempMatrix, 0, mRotationMatrix, 0);
+
+
+        Matrix.setIdentityM(mScaleMatrix, 0);
+        Matrix.scaleM(mScaleMatrix, 0, mScaleFactor, mScaleFactor, 0);
+        mTempMatrix = mModelMatrix.clone();
+        Matrix.multiplyMM(mModelMatrix, 0, mTempMatrix, 0, mScaleMatrix, 0);
+
+
+        mFinalMatrix = mModelMatrix.clone();
+        Matrix.multiplyMM(mMVPMatrix, 0, mFinalMatrix, 0, mMVPMatrix, 0);
+
+/*
+        // add translation
+        Matrix.setIdentityM(mTranslationMatrix, 0);
+        Matrix.translateM(mTranslationMatrix, 0, -mX / surfaceWidth, -mY / surfaceHeight, 0);
+        Matrix.multiplyMM(mFinalMatrix, 0, mMVPMatrix, 0, mTranslationMatrix, 0);
 
         //add rotation
-        Matrix.setRotateM(mRotationMatrix, 0, mRotationDegrees, 0, 0, 1.0f);
-        Matrix.multiplyMM(mFinalMatrix, 0, mMVPMatrix, 0, mRotationMatrix, 0);
         //Log.d(TAG, "Rotation Degree = " + mRotationDegrees);
+        Matrix.setRotateM(mRotationMatrix, 0, mRotationDegrees, 0, 0, 1.0f);
+        Matrix.multiplyMM(mFinalMatrix, 0, mFinalMatrix, 0, mRotationMatrix, 0);
+
+
+        //add scalling
         Matrix.setIdentityM(mScaleMatrix, 0);
         Matrix.scaleM(mScaleMatrix, 0, mScaleFactor, mScaleFactor, 0);
         Matrix.multiplyMM(mFinalMatrix, 0, mFinalMatrix, 0, mScaleMatrix, 0);
+*/
 
-        // add translation
-        Matrix.setIdentityM(mTranslationMatrix, 0);
-        Log.d(TAG, String.format("mX = %.2f, mY = %.2f", mX, mY));
-        Matrix.translateM(mTranslationMatrix, 0, -mX / surfaceWidth, -mY / surfaceHeight, 0);
-        Matrix.multiplyMM(mFinalMatrix, 0, mFinalMatrix, 0, mTranslationMatrix, 0);
-        squareWithMemeTexture.draw(mFinalMatrix);
+        squareWithMemeTexture.draw(mMVPMatrix);
         //drawBox();
     }
 

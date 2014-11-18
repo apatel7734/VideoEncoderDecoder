@@ -48,7 +48,7 @@ public class MainSurfaceView extends GLSurfaceView {
         setEGLContextClientVersion(2);
         // Set the Renderer for drawing on the GLSurfaceView
         SurfaceHandler surfaceHandler = new SurfaceHandler((MyActivity) context);
-        mRenderer = new SurfaceRenderer(surfaceHandler);
+        mRenderer = new SurfaceRenderer(surfaceHandler, getContext());
         setRenderer(mRenderer);
         // Render the view only when there is a change in the drawing data
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
@@ -56,7 +56,6 @@ public class MainSurfaceView extends GLSurfaceView {
         mScaleDetector = new ScaleGestureDetector(this.getContext(), new ScaleListener());
         mRotateDetector = new RotateGestureDetector(this.getContext(), new RotateListener());
         mMoveDetector = new MoveGestureDetector(this.getContext(), new MoveListener());
-
     }
 
     /*

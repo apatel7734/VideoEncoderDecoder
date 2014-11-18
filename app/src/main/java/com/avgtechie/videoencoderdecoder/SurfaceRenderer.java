@@ -1,5 +1,6 @@
 package com.avgtechie.videoencoderdecoder;
 
+import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -21,9 +22,11 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private SurfaceTexture mSurfaceTexture;
     private SurfaceHandler mSurfaceHandler;
     private final float[] mSTMatrix = new float[16];
+    private Context mContext;
 
-    public SurfaceRenderer(SurfaceHandler handler) {
+    public SurfaceRenderer(SurfaceHandler handler, Context context) {
         mSurfaceHandler = handler;
+        mContext = context;
     }
 
     private SquareWithMemeTexture squareWithMemeTexture;
@@ -56,7 +59,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         mTextureId = mFullScreen.createTextureObject();
         mSurfaceTexture = new SurfaceTexture(mTextureId);
         mSurfaceHandler.sendMessage(mSurfaceHandler.obtainMessage(SurfaceHandler.MSG_SET_SURFACE_TEXTURE, mSurfaceTexture));
-        squareWithMemeTexture = new SquareWithMemeTexture();
+        squareWithMemeTexture = new SquareWithMemeTexture(mContext);
     }
 
     @Override
@@ -114,7 +117,8 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(mFinalMatrix, 0, mFinalMatrix, 0, mScaleMatrix, 0);
 */
 
-        squareWithMemeTexture.draw(mMVPMatrix);
+        //squareWithMemeTexture.draw(mMVPMatrix);
+        squareWithMemeTexture.drawImage(mMVPMatrix);
         //drawBox();
     }
 

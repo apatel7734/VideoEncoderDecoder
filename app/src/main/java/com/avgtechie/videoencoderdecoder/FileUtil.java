@@ -72,7 +72,7 @@ public class FileUtil {
     }
 
     public File getOutputFile(Context context) {
-        File outputFile = new File(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES), "camera-test.mp4");
+        File outputFile = new File(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES), "my_recording.mp4");
         return outputFile;
     }
 

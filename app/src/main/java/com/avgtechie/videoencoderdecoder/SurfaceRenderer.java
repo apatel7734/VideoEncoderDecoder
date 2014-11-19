@@ -2,10 +2,13 @@ package com.avgtechie.videoencoderdecoder;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.opengl.EGL14;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
+
+import java.io.File;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -24,10 +27,16 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private final float[] mSTMatrix = new float[16];
     private Context mContext;
     private boolean blendingEnabled = false;
+    //Video Encoding
+    File mOutputFile;
+    TextureMovieEncoder mVideoEncoder;
 
-    public SurfaceRenderer(SurfaceHandler handler, Context context) {
+    public SurfaceRenderer(SurfaceHandler handler, Context context, File outputFile, TextureMovieEncoder videoEncoder) {
         mSurfaceHandler = handler;
         mContext = context;
+        mOutputFile = outputFile;
+        Log.d(TAG, "Output = " + mOutputFile);
+        mVideoEncoder = videoEncoder;
     }
 
     //private SquareWithMemeTexture squareWithMemeTexture;
@@ -53,6 +62,8 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private float[] mModelMatrix = new float[16];
     private float[] mTempMatrix = new float[16];
     private ImageSprite sprite;
+    private volatile MyActivity.RecordingStatus mRecordingStatus = MyActivity.RecordingStatus.RECORDING_OFF;
+    private volatile MyActivity.RecordingStatus mCurrentStatus = MyActivity.RecordingStatus.RECORDING_OFF;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -108,12 +119,22 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         mFinalMatrix = mModelMatrix.clone();
         Matrix.multiplyMM(mMVPMatrix, 0, mFinalMatrix, 0, mMVPMatrix, 0);
 
-        //squareWithMemeTexture.draw(mMVPMatrix);
-        //squareWithMemeTexture.drawImage();
         sprite.doDraw(mMVPMatrix);
-        //drawSprite();
-        //drawBox();
 
+        if (mCurrentStatus != MyActivity.RecordingStatus.RECORDING_ON && mRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_ON)) {
+            mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(mOutputFile, 640, 480, 1000000, EGL14.eglGetCurrentContext(), sprite));
+            mCurrentStatus = MyActivity.RecordingStatus.RECORDING_ON;
+        } else if (mCurrentStatus != MyActivity.RecordingStatus.RECORDING_OFF && mRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_OFF)) {
+            mVideoEncoder.stopRecording();
+            mCurrentStatus = MyActivity.RecordingStatus.RECORDING_OFF;
+        }
+
+        mVideoEncoder.setTextureId(mTextureId);
+        mVideoEncoder.frameAvailable(mSurfaceTexture);
+
+        //ArrayList<float[]> objs = new ArrayList<float[]>();
+        //objs.add(mMVPMatrix);
+        //mVideoEncoder.frameAvailable(mSurfaceTexture, objs);
     }
 
     private void setupDefaultDrawing() {
@@ -131,15 +152,6 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
     }
 
-    /*
-        private void drawBox() {
-            GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
-            GLES20.glScissor((surfaceWidth / 2) - (boxWidth / 2), (surfaceHeight / 2) - (boxHeight / 2), boxWidth, boxHeight);
-            GLES20.glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-            GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
-        }
-    */
     public static int loadShader(int type, String shaderCode) {
 
         // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
@@ -167,5 +179,9 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
     public void setRotationDegrees(float rotationDegree) {
         this.mRotationDegrees = rotationDegree;
+    }
+
+    public void setRecordingStatus(MyActivity.RecordingStatus recordingStatus) {
+        this.mRecordingStatus = recordingStatus;
     }
 }

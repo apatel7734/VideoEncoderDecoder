@@ -5,6 +5,7 @@ import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
+import android.view.View;
 import android.widget.Toast;
 
 import java.io.File;
@@ -21,11 +22,6 @@ public class MyActivity extends Activity implements MoviePlayer.PlayerFeedback, 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my);
         mMainSurfaceView = (MainSurfaceView) findViewById(R.id.main_surfaceView);
-        //mMainSurfaceView.setEGLContextClientVersion(2);
-        //mSurfaceRenderer = new SurfaceRenderer(surfaceHandler);
-        //mMainSurfaceView.setRenderer(mSurfaceRenderer);
-        //mMainSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-        File videoOutputFile = FileUtil.getInstance().getOutputFile(this);
     }
 
     @Override
@@ -88,12 +84,16 @@ public class MyActivity extends Activity implements MoviePlayer.PlayerFeedback, 
     }
 
     //first clear surface to make sure
-    public void startRecording() {
+    public void startRecording(View view) {
         Log.d(TAG, "startRecording");
+        mMainSurfaceView.setRecordingStatus(RecordingStatus.RECORDING_ON);
+        Toast.makeText(this, "Started!", Toast.LENGTH_SHORT).show();
     }
 
-    public void stopRecording() {
+    public void stopRecording(View view) {
         Log.d(TAG, "stopRecording");
+        mMainSurfaceView.setRecordingStatus(RecordingStatus.RECORDING_OFF);
+        Toast.makeText(this, "Stopped!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -105,5 +105,9 @@ public class MyActivity extends Activity implements MoviePlayer.PlayerFeedback, 
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
         //Log.d(TAG, "onFrameAvailable");
         mMainSurfaceView.requestRender();
+    }
+
+    public enum RecordingStatus {
+        RECORDING_ON, RECORDING_OFF;
     }
 }

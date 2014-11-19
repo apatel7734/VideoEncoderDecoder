@@ -24,28 +24,21 @@ public class ImageSprite {
     private int mTextureDataHandle;
 
     private final String vertexShaderCode =
-//Test
             "attribute vec2 a_TexCoordinate;" +
                     "varying vec2 v_TexCoordinate;" +
-//End Test
                     "uniform mat4 uMVPMatrix;" +
                     "attribute vec4 vPosition;" +
                     "void main() {" +
                     "  gl_Position = vPosition * uMVPMatrix;" +
-                    //Test
                     "v_TexCoordinate = a_TexCoordinate;" +
-                    //End Test
                     "}";
 
     private final String fragmentShaderCode =
             "precision mediump float;" +
                     "uniform vec4 vColor;" +
-//Test
                     "uniform sampler2D u_Texture;" +
                     "varying vec2 v_TexCoordinate;" +
-//End Test
                     "void main() {" +
-//"gl_FragColor = vColor;" +
                     "gl_FragColor = (vColor * texture2D(u_Texture, v_TexCoordinate));" +
                     "}";
 
@@ -94,31 +87,17 @@ public class ImageSprite {
         // OpenGL has a Y axis pointing upward, we adjust for that here by flipping the Y axis.
         // What's more is that the texture coordinates are the same for every face.
 
-        final float[] cubeTextureCoordinateData =
+        final float[] textureCoordinates =
                 {
                         //Front face
-                        /*
-                        0.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 1.0f,
-                        1.0f, 0.0f
-                        */
-                        /*
-                        -0.5f, 0.5f,
-                        -0.5f, -0.5f,
-                        0.5f, -0.5f,
-                        0.5f, 0.5f
-                        */
                         0.0f, 0.0f, // TexCoord 0
                         0.0f, 1.0f, // TexCoord 1
                         1.0f, 1.0f, // TexCoord 2
                         1.0f, 0.0f // TexCoord 3
                 };
 
-        mCubeTextureCoordinates = ByteBuffer.allocateDirect(cubeTextureCoordinateData.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mCubeTextureCoordinates.put(cubeTextureCoordinateData).position(0);
+        mCubeTextureCoordinates = ByteBuffer.allocateDirect(textureCoordinates.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mCubeTextureCoordinates.put(textureCoordinates).position(0);
 
         //Initialize byte buffer for the draw list
         ByteBuffer dlb = ByteBuffer.allocateDirect(spriteCoords.length * 2);
@@ -143,7 +122,7 @@ public class ImageSprite {
         mTextureDataHandle = loadTexture(mContext, R.drawable.ic_launcher);
     }
 
-    public void Draw(float[] mvpMatrix) {
+    public void doDraw(float[] mvpMatrix) {
         //Add program to OpenGL ES Environment
         GLES20.glUseProgram(shaderProgram);
 

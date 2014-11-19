@@ -51,6 +51,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private float[] mFinalMatrix = new float[16];
     private float[] mModelMatrix = new float[16];
     private float[] mTempMatrix = new float[16];
+    private ImageSprite sprite;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -60,6 +61,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         mSurfaceTexture = new SurfaceTexture(mTextureId);
         mSurfaceHandler.sendMessage(mSurfaceHandler.obtainMessage(SurfaceHandler.MSG_SET_SURFACE_TEXTURE, mSurfaceTexture));
         squareWithMemeTexture = new SquareWithMemeTexture(mContext);
+        sprite = new ImageSprite(mContext);
     }
 
     @Override
@@ -73,14 +75,18 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         Log.d(TAG, String.format("Width = %d and Height = %d", width, height));
     }
 
+    /*
     @Override
     public void onDrawFrame(GL10 gl) {
 
         setupDefaultDrawing();
+
+
         // draw decoded frame on surfacetexture
         mSurfaceTexture.updateTexImage();
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
         mFullScreen.drawFrame(mTextureId, mSTMatrix);
+
 
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.translateM(mModelMatrix, 0, mX / surfaceWidth, -mY / surfaceHeight, 0);
@@ -99,7 +105,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         mFinalMatrix = mModelMatrix.clone();
         Matrix.multiplyMM(mMVPMatrix, 0, mFinalMatrix, 0, mMVPMatrix, 0);
 
-/*
+
         // add translation
         Matrix.setIdentityM(mTranslationMatrix, 0);
         Matrix.translateM(mTranslationMatrix, 0, -mX / surfaceWidth, -mY / surfaceHeight, 0);
@@ -115,16 +121,43 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         Matrix.setIdentityM(mScaleMatrix, 0);
         Matrix.scaleM(mScaleMatrix, 0, mScaleFactor, mScaleFactor, 0);
         Matrix.multiplyMM(mFinalMatrix, 0, mFinalMatrix, 0, mScaleMatrix, 0);
-*/
+
 
         //squareWithMemeTexture.draw(mMVPMatrix);
-        squareWithMemeTexture.drawImage(mMVPMatrix);
+        squareWithMemeTexture.drawImage();
         //drawBox();
+    }
+    */
+
+    @Override
+    public void onDrawFrame(GL10 gl) {
+        //Redraw background color
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
+        //Set the camera position (View Matrix)
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+
+        //Calculate the projection and view transformation
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
+
+        //Create a rotation transformation for the triangle
+        Matrix.setRotateM(mRotationMatrix, 0, mRotationDegrees, 0, 0, -1.0f);
+
+        //Combine the rotation matrix with the projection and camera view
+        Matrix.multiplyMM(mMVPMatrix, 0, mRotationMatrix, 0, mMVPMatrix, 0);
+
+        //Draw Shape
+        //triangle.Draw(mMVPMatrix);
+        sprite.Draw(mMVPMatrix);
     }
 
     private void setupDefaultDrawing() {
         // Draw background color
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+
+        // Draw background color
+        GLES20.glClearColor(1.0f, 0, 0, 0);
+
         // Set the camera position (View matrix)
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
         // Calculate the projection and view transformation

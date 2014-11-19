@@ -23,13 +23,14 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private SurfaceHandler mSurfaceHandler;
     private final float[] mSTMatrix = new float[16];
     private Context mContext;
+    private boolean blendingEnabled = false;
 
     public SurfaceRenderer(SurfaceHandler handler, Context context) {
         mSurfaceHandler = handler;
         mContext = context;
     }
 
-    private SquareWithMemeTexture squareWithMemeTexture;
+    //private SquareWithMemeTexture squareWithMemeTexture;
 
     private float mScaleFactor = .4f;
     private float mRotationDegrees = 0.3f;
@@ -60,7 +61,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         mTextureId = mFullScreen.createTextureObject();
         mSurfaceTexture = new SurfaceTexture(mTextureId);
         mSurfaceHandler.sendMessage(mSurfaceHandler.obtainMessage(SurfaceHandler.MSG_SET_SURFACE_TEXTURE, mSurfaceTexture));
-        squareWithMemeTexture = new SquareWithMemeTexture(mContext);
+        //squareWithMemeTexture = new SquareWithMemeTexture(mContext);
         sprite = new ImageSprite(mContext);
     }
 
@@ -70,8 +71,11 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         surfaceHeight = height;
         surfaceWidth = width;
         float ratio = (float) width / height;
-        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
-        //Matrix.orthoM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+        //Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+
+        GLES20.glViewport(0, 0, (int) surfaceWidth, (int) surfaceHeight);
+
+        Matrix.orthoM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
         Log.d(TAG, String.format("Width = %d and Height = %d", width, height));
     }
 
@@ -81,7 +85,6 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
         setupDefaultDrawing();
 
-
         // draw decoded frame on surfacetexture
         mSurfaceTexture.updateTexImage();
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
@@ -89,6 +92,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
         Matrix.setIdentityM(mModelMatrix, 0);
         //Matrix.translateM(mModelMatrix, 0, mX / surfaceWidth, -mY / surfaceHeight, 0);
+
 
         Matrix.setRotateM(mRotationMatrix, 0, mRotationDegrees, 0, 0, -1.0f);
         mTempMatrix = mModelMatrix.clone();
@@ -104,24 +108,6 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         mFinalMatrix = mModelMatrix.clone();
         Matrix.multiplyMM(mMVPMatrix, 0, mFinalMatrix, 0, mMVPMatrix, 0);
 
-
-        // add translation
-        Matrix.setIdentityM(mTranslationMatrix, 0);
-        Matrix.translateM(mTranslationMatrix, 0, -mX / surfaceWidth, -mY / surfaceHeight, 0);
-        Matrix.multiplyMM(mFinalMatrix, 0, mMVPMatrix, 0, mTranslationMatrix, 0);
-
-        //add rotation
-        //Log.d(TAG, "Rotation Degree = " + mRotationDegrees);
-        Matrix.setRotateM(mRotationMatrix, 0, mRotationDegrees, 0, 0, 1.0f);
-        Matrix.multiplyMM(mFinalMatrix, 0, mFinalMatrix, 0, mRotationMatrix, 0);
-
-
-        //add scalling
-        Matrix.setIdentityM(mScaleMatrix, 0);
-        Matrix.scaleM(mScaleMatrix, 0, mScaleFactor, mScaleFactor, 0);
-        Matrix.multiplyMM(mFinalMatrix, 0, mFinalMatrix, 0, mScaleMatrix, 0);
-
-
         //squareWithMemeTexture.draw(mMVPMatrix);
         //squareWithMemeTexture.drawImage();
         sprite.doDraw(mMVPMatrix);
@@ -133,7 +119,12 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private void setupDefaultDrawing() {
         // Draw background color
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
+        if (blendingEnabled) {
+            GLES20.glDisable(GLES20.GL_CULL_FACE);
+            GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+            GLES20.glEnable(GLES20.GL_BLEND);
+            GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE);
+        }
         // Set the camera position (View matrix)
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
         // Calculate the projection and view transformation

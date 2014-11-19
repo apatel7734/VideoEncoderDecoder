@@ -52,10 +52,21 @@ public class ImageSprite {
 
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 2;
-    static float spriteCoords[] = {-0.5f, 0.5f,   // top left
+    static float spriteCoords[] = {
+            -0.5f, 0.5f,   // top left
             -0.5f, -0.5f,   // bottom left
             0.5f, -0.5f,   // bottom right
-            0.5f, 0.5f}; //top right
+            0.5f, 0.5f//top right
+    };
+
+    final float[] textureCoordinates =
+            {
+                    //Front face
+                    0.0f, 0.0f, // TexCoord 0
+                    0.0f, 1.0f, // TexCoord 1
+                    1.0f, 1.0f, // TexCoord 2
+                    1.0f, 0.0f // TexCoord 3
+            };
 
     private short drawOrder[] = {0, 1, 2, 0, 2, 3}; //Order to draw vertices
     private final int vertexStride = COORDS_PER_VERTEX * 4; //Bytes per vertex
@@ -86,15 +97,6 @@ public class ImageSprite {
         // Because images have a Y axis pointing downward (values increase as you move down the image) while
         // OpenGL has a Y axis pointing upward, we adjust for that here by flipping the Y axis.
         // What's more is that the texture coordinates are the same for every face.
-
-        final float[] textureCoordinates =
-                {
-                        //Front face
-                        0.0f, 0.0f, // TexCoord 0
-                        0.0f, 1.0f, // TexCoord 1
-                        1.0f, 1.0f, // TexCoord 2
-                        1.0f, 0.0f // TexCoord 3
-                };
 
         mCubeTextureCoordinates = ByteBuffer.allocateDirect(textureCoordinates.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         mCubeTextureCoordinates.put(textureCoordinates).position(0);

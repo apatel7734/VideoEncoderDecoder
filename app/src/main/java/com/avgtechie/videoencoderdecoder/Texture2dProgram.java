@@ -284,9 +284,7 @@ public class Texture2dProgram {
      * @param texBuffer       Buffer with vertex texture data.
      * @param texStride       Width, in bytes, of the texture data for each vertex.
      */
-    public void draw(float[] mvpMatrix, FloatBuffer vertexBuffer, int firstVertex,
-                     int vertexCount, int coordsPerVertex, int vertexStride,
-                     float[] texMatrix, FloatBuffer texBuffer, int textureId, int texStride) {
+    public void draw(float[] mvpMatrix, FloatBuffer vertexBuffer, int firstVertex, int vertexCount, int coordsPerVertex, int vertexStride, float[] texMatrix, FloatBuffer texBuffer, int textureId, int texStride) {
         GlUtil.checkGlError("draw start");
 
         // Select the program.

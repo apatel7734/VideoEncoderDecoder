@@ -5,6 +5,7 @@ import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
+import android.view.View;
 import android.widget.Toast;
 
 import java.io.File;
@@ -76,11 +77,11 @@ public class MyActivity extends Activity implements MoviePlayer.PlayerFeedback, 
     }
 
     //first clear surface to make sure
-    public void startRecording() {
+    public void startRecording(View view) {
         Log.d(TAG, "startRecording");
     }
 
-    public void stopRecording() {
+    public void stopRecording(View view) {
         Log.d(TAG, "stopRecording");
     }
 

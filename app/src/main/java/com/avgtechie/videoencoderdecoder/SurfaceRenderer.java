@@ -95,7 +95,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
 
         setupDefaultDrawing();
-
+        Log.d(TAG, "update TexImage");
         // draw decoded frame on surfacetexture
         mSurfaceTexture.updateTexImage();
         mSurfaceTexture.getTransformMatrix(mSTMatrix);

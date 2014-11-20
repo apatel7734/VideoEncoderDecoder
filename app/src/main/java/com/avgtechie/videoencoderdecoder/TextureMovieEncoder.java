@@ -311,7 +311,7 @@ public class TextureMovieEncoder implements Runnable {
                     break;
                 case MSG_FRAME_AVAILABLE:
                     long timestamp = (((long) inputMessage.arg1) << 32) | (((long) inputMessage.arg2) & 0xffffffffL);
-                    ArrayList<float[]> arrayList = (ArrayList<float[]>) obj;
+                    //ArrayList<float[]> arrayList = (ArrayList<float[]>) obj;
                     //encoder.handleFrameAvailable(arrayList, timestamp);
                     encoder.handleFrameAvailable((float[]) obj, timestamp);
 
@@ -355,13 +355,13 @@ public class TextureMovieEncoder implements Runnable {
         Log.d(TAG, "handleFrameAvailable tr=" + transform);
         mVideoEncoder.drainEncoder(false);
         //mFullScreen.drawFrame(mTextureId, transform);
-        mFullScreen.drawFrame(mTextureId, transform);
-
+        //mFullScreen.drawFrame(mTextureId, transform);
+        drawBox2(mFrameNum++);
         mInputWindowSurface.setPresentationTime(timestampNanos);
         Log.d(TAG, "Before Swapping buffers");
         mInputWindowSurface.swapBuffers();
     }
-
+/*
     private void handleFrameAvailable(ArrayList<float[]> objs, long timestampNanos) {
         if (objs.size() > 0) {
             float[] transform = objs.get(objs.size() - 1);
@@ -370,14 +370,15 @@ public class TextureMovieEncoder implements Runnable {
             Log.d(TAG, "handleFrameAvailable tr=" + transform);
             mVideoEncoder.drainEncoder(false);
             //mFullScreen.drawFrame(mTextureId, transform);
-            mFullScreen.drawFrame(mTextureId, transform);
-            mSprite.doDraw(second);
+            //mSprite.doDraw(second);
+            drawBox(mFrameNum++);
             mInputWindowSurface.setPresentationTime(timestampNanos);
             Log.d(TAG, "Before Swapping buffers");
             mInputWindowSurface.swapBuffers();
         }
     }
 
+*/
 
     /**
      * Handles a request to stop encoding.

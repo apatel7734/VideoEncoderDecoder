@@ -21,11 +21,7 @@ public class MyActivity extends Activity implements MoviePlayer.PlayerFeedback, 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my);
         mMainSurfaceView = (MainSurfaceView) findViewById(R.id.main_surfaceView);
-        //mMainSurfaceView.setEGLContextClientVersion(2);
-        //mSurfaceRenderer = new SurfaceRenderer(surfaceHandler);
-        //mMainSurfaceView.setRenderer(mSurfaceRenderer);
-        //mMainSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-        File videoOutputFile = FileUtil.getInstance().getOutputFile(this);
+        FileUtil.getInstance().copyFileFromAssets(this);
     }
 
     @Override
@@ -61,21 +57,13 @@ public class MyActivity extends Activity implements MoviePlayer.PlayerFeedback, 
         MoviePlayer player = null;
         try {
             File inputMediaFile = FileUtil.getInstance().getMemeFilePath();
-            File dir = FileUtil.getInstance().getMemeDirPath();
-            Log.d(TAG, "dir absolute path = " + dir.getAbsolutePath());
-            Log.d(TAG, "dir canonical path = " + dir.getCanonicalFile());
-            File memeVideo = new File(dir.getPath() + File.separator + "memeVideos");
-            Log.d(TAG, "dir absolute path = " + memeVideo.getAbsolutePath());
-            if (!memeVideo.exists()) {
-                Log.d(TAG, "Directory doesnot exist");
-            }
-            File[] files = FileUtil.getInstance().getMemeDirPath().listFiles();
-            Log.d(TAG, "File  = " + inputMediaFile.getAbsolutePath());
+
             if (!inputMediaFile.exists()) {
                 Log.d(TAG, "Video doesnot exist : " + inputMediaFile);
                 Toast.makeText(this, "No Video", Toast.LENGTH_SHORT).show();
                 return;
             }
+
             player = new MoviePlayer(inputMediaFile, surface, callback);
         } catch (Exception ioe) {
             Log.e(TAG, "Unable to play movie", ioe);

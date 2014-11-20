@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -20,7 +21,7 @@ public class FileUtil {
     private static final String TAG = "FileUtil";
     private static FileUtil fileUtil;
 
-    private String fileName = "video-recording-2.mp4";
+    private String fileName = "video_recording_2.mp4";
     private String golf_tiger_woods = "slack_for_ios_upload.mp4";
     private String slider = "gen-sliders.mp4";
     private String youtube = "youtube_tigerwoods.mp4";
@@ -42,6 +43,38 @@ public class FileUtil {
         File videoFile = new File(memeDir, youtube);
         return videoFile;
     }
+
+    public void copyFileFromAssets(Context context) {
+        InputStream in = null;
+        OutputStream fout = null;
+        int count = 0;
+
+        try {
+            in = context.getAssets().open(youtube);
+            fout = new FileOutputStream(getMemeFilePath(youtube));
+
+            byte data[] = new byte[1024];
+            while ((count = in.read(data, 0, 1024)) != -1) {
+                fout.write(data, 0, count);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                }
+            }
+            if (fout != null) {
+                try {
+                    fout.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
+
 
     public File getMemeFilePath(String fileName) {
         File memeDir = getMemeDirPath();

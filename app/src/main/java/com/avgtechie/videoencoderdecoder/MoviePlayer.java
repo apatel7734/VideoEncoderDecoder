@@ -25,7 +25,6 @@ import android.util.Log;
 import android.view.Surface;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -171,10 +170,11 @@ public class MoviePlayer {
 
         // The MediaExtractor error messages aren't very useful.  Check to see if the input
         // file exists so we can throw a better one if it's not there.
+        /*
         if (!mSourceFile.canRead()) {
             throw new FileNotFoundException("Unable to read " + mSourceFile);
         }
-
+        */
         try {
             extractor = new MediaExtractor();
             extractor.setDataSource(mSourceFile.toString());

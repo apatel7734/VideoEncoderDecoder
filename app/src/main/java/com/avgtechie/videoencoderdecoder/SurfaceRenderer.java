@@ -136,7 +136,8 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private void processRecording() {
         if (!mCurrentRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_ON) && mRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_ON)) {
             mCurrentRecordingStatus = MyActivity.RecordingStatus.RECORDING_ON;
-            mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(mOutputFile, 640, 480, 1000000, EGL14.eglGetCurrentContext()));
+            //mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(mOutputFile, 640, 480, 1000000, EGL14.eglGetCurrentContext()));
+            mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(mOutputFile, 640, 480, 1000000, EGL14.eglGetCurrentContext(), sprite));
             Log.d(TAG, "***** started recording *****");
         } else if (!mCurrentRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_OFF) && mRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_OFF)) {
             mCurrentRecordingStatus = MyActivity.RecordingStatus.RECORDING_OFF;
@@ -145,7 +146,8 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         }
 
         mVideoEncoder.setTextureId(mTextureId);
-        mVideoEncoder.frameAvailable(mSurfaceTexture);
+        //mVideoEncoder.frameAvailable(mSurfaceTexture);
+        mVideoEncoder.frameAvailable(mSurfaceTexture, mMVPMatrix);
     }
 
     private void setupDefaultDrawing() {

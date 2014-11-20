@@ -27,6 +27,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 /**
  * Encode a movie from frames rendered from an external texture image.
@@ -79,6 +80,7 @@ public class TextureMovieEncoder implements Runnable {
     private Object mReadyFence = new Object();      // guards ready/running
     private boolean mReady;
     private boolean mRunning;
+    private ImageSprite mSprite;
 
 
     /**
@@ -97,15 +99,28 @@ public class TextureMovieEncoder implements Runnable {
         final int mHeight;
         final int mBitRate;
         final EGLContext mEglContext;
+        final ImageSprite imgSprite;
 
         public EncoderConfig(File outputFile, int width, int height, int bitRate,
-                             EGLContext sharedEglContext) {
+                             EGLContext sharedEglContext, ImageSprite sprite) {
             mOutputFile = outputFile;
             mWidth = width;
             mHeight = height;
             mBitRate = bitRate;
             mEglContext = sharedEglContext;
+            imgSprite = sprite;
         }
+
+        /*
+                public EncoderConfig(File outputFile, int width, int height, int bitRate,
+                                     EGLContext sharedEglContext) {
+                    mOutputFile = outputFile;
+                    mWidth = width;
+                    mHeight = height;
+                    mBitRate = bitRate;
+                    mEglContext = sharedEglContext;
+                }
+        */
 
         @Override
         public String toString() {
@@ -188,7 +203,9 @@ public class TextureMovieEncoder implements Runnable {
      * stall the caller while this thread does work.
      */
 
-    public void frameAvailable(SurfaceTexture st) {
+    private ArrayList<float[]> arrayList = new ArrayList<float[]>();
+
+    public void frameAvailable(SurfaceTexture st, float[] spriteMtx) {
         synchronized (mReadyFence) {
             if (!mReady) {
                 return;
@@ -208,7 +225,11 @@ public class TextureMovieEncoder implements Runnable {
             return;
         }
         Log.d(TAG, "Framenumber= " + mFrameNum++);
-        mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, (int) (timestamp >> 32), (int) timestamp, transform));
+        arrayList.clear();
+        arrayList.add(transform);
+        arrayList.add(spriteMtx);
+        //mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, (int) (timestamp >> 32), (int) timestamp, transform));
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, (int) (timestamp >> 32), (int) timestamp, arrayList));
     }
 
     /**
@@ -261,6 +282,8 @@ public class TextureMovieEncoder implements Runnable {
             mWeakEncoder = new WeakReference<TextureMovieEncoder>(encoder);
         }
 
+        ArrayList<float[]> data = new ArrayList<float[]>();
+
         @Override  // runs on encoder thread
         public void handleMessage(Message inputMessage) {
             int what = inputMessage.what;
@@ -282,7 +305,9 @@ public class TextureMovieEncoder implements Runnable {
                 case MSG_FRAME_AVAILABLE:
                     long timestamp = (((long) inputMessage.arg1) << 32) |
                             (((long) inputMessage.arg2) & 0xffffffffL);
-                    encoder.handleFrameAvailable((float[]) obj, timestamp);
+                    //encoder.handleFrameAvailable((float[]) obj, timestamp);
+                    encoder.handleFrameAvailable((ArrayList<float[]>) obj, timestamp);
+
                     break;
                 case MSG_SET_TEXTURE_ID:
                     encoder.handleSetTexture(inputMessage.arg1);
@@ -306,6 +331,7 @@ public class TextureMovieEncoder implements Runnable {
         Log.d(TAG, "handleStartRecording " + config);
         mFrameNum = 0;
         prepareEncoder(config.mEglContext, config.mWidth, config.mHeight, config.mBitRate, config.mOutputFile);
+        mSprite = config.imgSprite;
     }
 
     /**
@@ -323,10 +349,27 @@ public class TextureMovieEncoder implements Runnable {
         mVideoEncoder.drainEncoder(false);
 
         mFullScreen.drawFrame(mTextureId, transform);
-
         mInputWindowSurface.setPresentationTime(timestampNanos);
         Log.d(TAG, "Before Swapping buffers");
         mInputWindowSurface.swapBuffers();
+    }
+
+    private void handleFrameAvailable(ArrayList<float[]> data, long timestampNanos) {
+        if (data.size() > 0) {
+            float[] transform = data.get(0);
+            float[] sprite = data.get(1);
+            Log.d(TAG, "handleFrameAvailable tr=" + transform);
+            mVideoEncoder.drainEncoder(false);
+
+            mFullScreen.drawFrame(mTextureId, transform);
+            if (sprite != null) {
+                mSprite.doDraw(sprite);
+            }
+            mInputWindowSurface.setPresentationTime(timestampNanos);
+            Log.d(TAG, "Before Swapping buffers");
+            mInputWindowSurface.swapBuffers();
+        }
+
     }
 
 

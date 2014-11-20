@@ -207,7 +207,7 @@ public class TextureMovieEncoder implements Runnable {
             Log.w(TAG, "HEY: got SurfaceTexture with timestamp of zero");
             return;
         }
-        Log.d(TAG, "Framenumber= " + mFrameNum);
+        Log.d(TAG, "Framenumber= " + mFrameNum++);
         mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, (int) (timestamp >> 32), (int) timestamp, transform));
     }
 
@@ -328,6 +328,7 @@ public class TextureMovieEncoder implements Runnable {
         Log.d(TAG, "Before Swapping buffers");
         mInputWindowSurface.swapBuffers();
     }
+
 
     /**
      * Handles a request to stop encoding.

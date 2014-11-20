@@ -104,7 +104,6 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
         // draw decoded frame on surfacetexture
         mSurfaceTexture.updateTexImage();
-        processRecording();
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
         mFullScreen.drawFrame(mTextureId, mSTMatrix);
 
@@ -129,7 +128,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         //squareWithMemeTexture.draw(mMVPMatrix);
         //squareWithMemeTexture.drawImage();
         sprite.doDraw(mMVPMatrix);
-        //processRecording();
+        processRecording();
         //drawSprite();
         //drawBox();
     }

@@ -2,10 +2,13 @@ package com.avgtechie.videoencoderdecoder;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.opengl.EGL14;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
+
+import java.io.File;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -24,11 +27,6 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private final float[] mSTMatrix = new float[16];
     private Context mContext;
     private boolean blendingEnabled = false;
-
-    public SurfaceRenderer(SurfaceHandler handler, Context context) {
-        mSurfaceHandler = handler;
-        mContext = context;
-    }
 
     //private SquareWithMemeTexture squareWithMemeTexture;
 
@@ -54,6 +52,27 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private float[] mTempMatrix = new float[16];
     private ImageSprite sprite;
 
+    //Encoder stuff
+    private MyActivity.RecordingStatus mRecordingStatus = MyActivity.RecordingStatus.RECORDING_OFF;
+    private MyActivity.RecordingStatus mCurrentRecordingStatus = MyActivity.RecordingStatus.RECORDING_OFF;
+    //video encoder stuff
+    private static TextureMovieEncoder mVideoEncoder;
+    private File mOutputFile;
+
+    public SurfaceRenderer(SurfaceHandler handler, Context context) {
+        mSurfaceHandler = handler;
+        mContext = context;
+    }
+
+    public SurfaceRenderer(SurfaceHandler handler, Context context, TextureMovieEncoder videoEncoder) {
+        mSurfaceHandler = handler;
+        mContext = context;
+        mVideoEncoder = videoEncoder;
+        mOutputFile = FileUtil.getInstance().getOutputMemeFilePath();
+        Log.d(TAG, "outputFile = " + mOutputFile);
+    }
+
+
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Log.d(TAG, "onSurfaceCreated");
@@ -72,9 +91,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         surfaceWidth = width;
         float ratio = (float) width / height;
         //Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
-
         GLES20.glViewport(0, 0, (int) surfaceWidth, (int) surfaceHeight);
-
         Matrix.orthoM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
         Log.d(TAG, String.format("Width = %d and Height = %d", width, height));
     }
@@ -87,6 +104,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
         // draw decoded frame on surfacetexture
         mSurfaceTexture.updateTexImage();
+        processRecording();
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
         mFullScreen.drawFrame(mTextureId, mSTMatrix);
 
@@ -111,9 +129,24 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         //squareWithMemeTexture.draw(mMVPMatrix);
         //squareWithMemeTexture.drawImage();
         sprite.doDraw(mMVPMatrix);
+        //processRecording();
         //drawSprite();
         //drawBox();
+    }
 
+    private void processRecording() {
+        if (!mCurrentRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_ON) && mRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_ON)) {
+            mCurrentRecordingStatus = MyActivity.RecordingStatus.RECORDING_ON;
+            mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(mOutputFile, 640, 480, 1000000, EGL14.eglGetCurrentContext()));
+            Log.d(TAG, "***** started recording *****");
+        } else if (!mCurrentRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_OFF) && mRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_OFF)) {
+            mCurrentRecordingStatus = MyActivity.RecordingStatus.RECORDING_OFF;
+            mVideoEncoder.stopRecording();
+            Log.d(TAG, "***** stopped recording *****");
+        }
+
+        mVideoEncoder.setTextureId(mTextureId);
+        mVideoEncoder.frameAvailable(mSurfaceTexture);
     }
 
     private void setupDefaultDrawing() {
@@ -167,5 +200,10 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
     public void setRotationDegrees(float rotationDegree) {
         this.mRotationDegrees = rotationDegree;
+    }
+
+
+    public void setRecordingStatus(MyActivity.RecordingStatus recordingStatus) {
+        this.mRecordingStatus = recordingStatus;
     }
 }

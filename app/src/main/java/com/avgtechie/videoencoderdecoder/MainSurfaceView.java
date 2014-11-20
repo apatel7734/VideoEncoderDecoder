@@ -32,6 +32,9 @@ public class MainSurfaceView extends GLSurfaceView {
     private RotateGestureDetector mRotateDetector;
     private MoveGestureDetector mMoveDetector;
 
+    private static TextureMovieEncoder mVideoEncoder = new TextureMovieEncoder();
+
+
     public MainSurfaceView(Context context) {
         super(context);
         Log.d(TAG, "MainSurfaceView(Context)");
@@ -48,7 +51,7 @@ public class MainSurfaceView extends GLSurfaceView {
         setEGLContextClientVersion(2);
         // Set the Renderer for drawing on the GLSurfaceView
         SurfaceHandler surfaceHandler = new SurfaceHandler((MyActivity) context);
-        mRenderer = new SurfaceRenderer(surfaceHandler, getContext());
+        mRenderer = new SurfaceRenderer(surfaceHandler, getContext(), mVideoEncoder);
         setRenderer(mRenderer);
         // Render the view only when there is a change in the drawing data
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
@@ -104,4 +107,9 @@ public class MainSurfaceView extends GLSurfaceView {
             return true;
         }
     }
+
+    public void updateRecordingStatus(MyActivity.RecordingStatus recordingStatus) {
+        mRenderer.setRecordingStatus(recordingStatus);
+    }
+
 }

@@ -70,16 +70,18 @@ public class Drawable2d {
      * right with external textures from SurfaceTexture.)
      */
     private static final float FULL_RECTANGLE_COORDS[] = {
-            /*
+
             -1.0f, -1.0f,   // 0 bottom left
             1.0f, -1.0f,   // 1 bottom right
             -1.0f, 1.0f,   // 2 top left
             1.0f, 1.0f,   // 3 top right
-            */
+
+            /*
             -1.0f, -0.5f,   // 0 bottom left
             1.0f, -0.5f,   // 1 bottom right
             -1.0f, 0.5f,   // 2 top left
             1.0f, 0.5f,   // 3 top right
+            */
 
     };
     private static final float FULL_RECTANGLE_TEX_COORDS[] = {

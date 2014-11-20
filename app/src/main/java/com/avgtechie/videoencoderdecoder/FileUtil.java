@@ -25,6 +25,7 @@ public class FileUtil {
     private String golf_tiger_woods = "slack_for_ios_upload.mp4";
     private String slider = "gen-sliders.mp4";
     private String youtube = "youtube_tigerwoods.mp4";
+    private String outputFile = "my_recording.mp4";
 
     public static FileUtil getInstance() {
         if (fileUtil == null) {
@@ -41,6 +42,12 @@ public class FileUtil {
     public File getMemeFilePath() {
         File memeDir = getMemeDirPath();
         File videoFile = new File(memeDir, youtube);
+        return videoFile;
+    }
+
+    public File getOutputMemeFilePath() {
+        File memeDir = getMemeDirPath();
+        File videoFile = new File(memeDir, outputFile);
         return videoFile;
     }
 

@@ -321,10 +321,9 @@ public class TextureMovieEncoder implements Runnable {
     private void handleFrameAvailable(float[] transform, long timestampNanos) {
         Log.d(TAG, "handleFrameAvailable tr=" + transform);
         mVideoEncoder.drainEncoder(false);
+
         mFullScreen.drawFrame(mTextureId, transform);
 
-        drawBox(mFrameNum++);
-        drawBox2(mFrameNum++);
         mInputWindowSurface.setPresentationTime(timestampNanos);
         Log.d(TAG, "Before Swapping buffers");
         mInputWindowSurface.swapBuffers();

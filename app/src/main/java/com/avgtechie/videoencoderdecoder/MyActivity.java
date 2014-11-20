@@ -17,6 +17,8 @@ public class MyActivity extends Activity implements MoviePlayer.PlayerFeedback, 
     private MainSurfaceView mMainSurfaceView;
     private MoviePlayer.PlayTask mPlayTask;
 
+    private static TextureMovieEncoder mVideoEncoder = new TextureMovieEncoder();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,10 +81,14 @@ public class MyActivity extends Activity implements MoviePlayer.PlayerFeedback, 
     //first clear surface to make sure
     public void startRecording(View view) {
         Log.d(TAG, "startRecording");
+        mMainSurfaceView.updateRecordingStatus(RecordingStatus.RECORDING_ON);
+        Toast.makeText(this,"Started..",Toast.LENGTH_LONG).show();
     }
 
     public void stopRecording(View view) {
         Log.d(TAG, "stopRecording");
+        mMainSurfaceView.updateRecordingStatus(RecordingStatus.RECORDING_OFF);
+        Toast.makeText(this,"Stopping..",Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -94,5 +100,9 @@ public class MyActivity extends Activity implements MoviePlayer.PlayerFeedback, 
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
         //Log.d(TAG, "onFrameAvailable");
         mMainSurfaceView.requestRender();
+    }
+
+    public enum RecordingStatus {
+        RECORDING_ON, RECORDING_OFF;
     }
 }

@@ -58,8 +58,6 @@ import java.util.Arrays;
 public class TextureMovieEncoder implements Runnable {
     //private static final String TAG = MainActivity.TAG;
     private static final String TAG = "TextureMovieEncoder";
-    private static final String TAG_TEST = "TextureMovieEncoder_test";
-    private static final boolean VERBOSE = false;
 
     private static final int MSG_START_RECORDING = 0;
     private static final int MSG_STOP_RECORDING = 1;
@@ -73,12 +71,10 @@ public class TextureMovieEncoder implements Runnable {
     private EglCore mEglCore;
     private FullFrameRect mFullScreen;
     private int mTextureId;
-    private int mFrameNum;
     private VideoEncoderCore mVideoEncoder;
 
     // ----- accessed by multiple threads -----
     private volatile EncoderHandler mHandler;
-
     private Object mReadyFence = new Object();      // guards ready/running
     private boolean mReady;
     private boolean mRunning;
@@ -112,17 +108,6 @@ public class TextureMovieEncoder implements Runnable {
             mEglContext = sharedEglContext;
             imgSprite = sprite;
         }
-
-        /*
-                public EncoderConfig(File outputFile, int width, int height, int bitRate,
-                                     EGLContext sharedEglContext) {
-                    mOutputFile = outputFile;
-                    mWidth = width;
-                    mHeight = height;
-                    mBitRate = bitRate;
-                    mEglContext = sharedEglContext;
-                }
-        */
 
         @Override
         public String toString() {
@@ -210,7 +195,8 @@ public class TextureMovieEncoder implements Runnable {
     private ArrayList<float[]> arrayList = new ArrayList<float[]>();
     private long previousTimestamp = 0;
 
-/*
+    /*
+
     public void frameAvailable(SurfaceTexture st) {
         synchronized (mReadyFence) {
             if (!mReady) {
@@ -232,12 +218,11 @@ public class TextureMovieEncoder implements Runnable {
         }
 
         previousTimestamp = timestamp;
-        Log.d(TAG, "Framenumber= " + mFrameNum++);
+        Log.d(TAG, "Calling Frame : timestamp = " + timestamp);
         mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, (int) (timestamp >> 32), (int) timestamp, transform));
     }
-*/
 
-    int order = 0;
+    */
 
     public void frameAvailable(SurfaceTexture st, float[] spriteMtx) {
         synchronized (mReadyFence) {
@@ -246,9 +231,8 @@ public class TextureMovieEncoder implements Runnable {
             }
         }
 
-        // TODO - avoid alloc every frame
         st.getTransformMatrix(transform);
-        int timestamp = (int) st.getTimestamp();
+        long timestamp = st.getTimestamp();
         if (timestamp == 0) {
             // Seeing this after device is toggled off/on with power button.  The
             // first frame back has a zero timestamp.
@@ -258,14 +242,15 @@ public class TextureMovieEncoder implements Runnable {
             Log.w(TAG, "HEY: got SurfaceTexture with timestamp of zero");
             return;
         }
+
+        previousTimestamp = timestamp;
         //Log.d(TAG, "Framenumber= " + mFrameNum++);
         arrayList.clear();
         arrayList.add(0, transform);
         arrayList.add(1, spriteMtx);
-        order++;
-        Log.d(TAG_TEST, "Calling frameAvailable Recorded Data # 268 sprite= " + Arrays.toString(arrayList.get(1)) + " :: timestamp = " + timestamp + " :: order = " + order);
         //mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, (int) (timestamp >> 32), (int) timestamp, transform));
-        mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, order, timestamp, arrayList));
+        previousTimestamp = timestamp;
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, (int) (timestamp >> 32), (int) timestamp, arrayList));
     }
 
     /**
@@ -340,25 +325,15 @@ public class TextureMovieEncoder implements Runnable {
                     encoder.handleStopRecording();
                     break;
                 case MSG_FRAME_AVAILABLE:
-                    /*
-                    long timestamp = (((long) inputMessage.arg1) << 32) | ((inputMessage.arg2) & 0xffffffffL);
-                    encoder.handleFrameAvailable((float[]) obj, timestamp);
-                    Log.d(TAG_TEST, "Handling handleMessage Recorded Data # 347 = " + Arrays.toString((float[]) obj) + " :: timestamp = " + timestamp);
-                    */
-                    //long timestamp = (((long) inputMessage.arg1) << 32) | ((inputMessage.arg2) & 0xffffffffL);
 
-                    long timestamp = inputMessage.arg2;
-                    long order = inputMessage.arg1;
+                    long timestamp = (((long) inputMessage.arg1) << 32) | ((inputMessage.arg2) & 0xffffffffL);
+
+
                     floatsList.clear();
                     floatsList = (ArrayList<float[]>) obj;
-
-                    if (floatsList.size() > 1) {
-                        float[] transform = floatsList.get(0);
-                        float[] sprite = floatsList.get(1);
-                        Log.d(TAG_TEST, "Handling handleMessage Recorded Data # 347 sprite = " + Arrays.toString(sprite) + " :: timestamp = " + timestamp + " :: order = " + order);
-                        Log.d(TAG_TEST, "Handling handleMessage Recorded Data # 347 transform = " + Arrays.toString(transform) + " :: timestamp = " + timestamp + " :: order = " + order);
-                    }
-                    encoder.handleFrameAvailable(floatsList, timestamp);
+                    Log.d(TAG, "Handle Frame : timestamp = " + timestamp);
+                    //encoder.handleFrameAvailable((float[]) obj, timestamp);
+                    encoder.handleFrameAvailableNew(floatsList, timestamp);
                     break;
                 case MSG_SET_TEXTURE_ID:
                     encoder.handleSetTexture(inputMessage.arg1);
@@ -380,7 +355,6 @@ public class TextureMovieEncoder implements Runnable {
      */
     private void handleStartRecording(EncoderConfig config) {
         Log.d(TAG, "handleStartRecording " + config);
-        mFrameNum = 0;
         prepareEncoder(config.mEglContext, config.mWidth, config.mHeight, config.mBitRate, config.mOutputFile);
         mSprite = config.imgSprite;
     }
@@ -397,15 +371,28 @@ public class TextureMovieEncoder implements Runnable {
      */
     private void handleFrameAvailable(float[] transform, long timestampNanos) {
         mVideoEncoder.drainEncoder(false);
-        Log.d(TAG_TEST, "handleFrameAvailable Recorded Data # 397 = " + Arrays.toString(transform) + " :: timestamp = " + timestampNanos);
+        Log.d(TAG, "handleFrameAvailable Recorded Data # 397 = " + Arrays.toString(transform) + " :: timestamp = " + timestampNanos);
         mFullScreen.drawFrame(mTextureId, transform);
         mInputWindowSurface.setPresentationTime(timestampNanos);
         mInputWindowSurface.swapBuffers();
     }
 
-    long mFrameNumb = 0;
+
+    private void handleFrameAvailableNew(ArrayList<float[]> data, long timestampNanos) {
+        mVideoEncoder.drainEncoder(false);
+        if (data.size() < 2) {
+            return;
+        }
+        float[] transform = data.get(0);
+        float[] sprite = data.get(1);
+        Log.d(TAG, "handleFrameAvailable Recorded Data # 397 = " + Arrays.toString(transform) + " :: timestamp = " + timestampNanos);
+        mFullScreen.drawFrame(mTextureId, transform);
+        mSprite.doDraw(sprite);
+        mInputWindowSurface.setPresentationTime(timestampNanos);
+        mInputWindowSurface.swapBuffers();
+    }
+
     long prevTimeStamp = 0;
-    //float[] temp = {-2.7021255f, 2.8291597f, 0.0f, 0.0f, 1.734513f, 1.6566303f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 3.0f};
 
     private void handleFrameAvailable(ArrayList<float[]> data, long timestampNanos) {
         if ((data.size() > 1) && (prevTimeStamp <= timestampNanos)) {

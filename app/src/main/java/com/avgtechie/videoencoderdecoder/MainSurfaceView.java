@@ -18,11 +18,6 @@ public class MainSurfaceView extends GLSurfaceView {
 
     private static final String TAG = "MainSurfaceView";
     private SurfaceRenderer mRenderer;
-
-    private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
-    private float mPreviousX;
-    private float mPreviousY;
-
     private float mScaleFactor = .4f;
     private float mRotationDegrees = 0.f;
     private float mFocusX = 0.f;

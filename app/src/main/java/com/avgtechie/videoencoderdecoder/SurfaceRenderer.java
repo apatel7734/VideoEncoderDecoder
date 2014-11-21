@@ -28,8 +28,6 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private Context mContext;
     private boolean blendingEnabled = false;
 
-    //private SquareWithMemeTexture squareWithMemeTexture;
-
     private float mScaleFactor = .4f;
     private float mRotationDegrees = 0.3f;
     private float mX;
@@ -56,11 +54,6 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     //video encoder stuff
     private static TextureMovieEncoder mVideoEncoder;
     private File mOutputFile;
-
-    public SurfaceRenderer(SurfaceHandler handler, Context context) {
-        mSurfaceHandler = handler;
-        mContext = context;
-    }
 
     public SurfaceRenderer(SurfaceHandler handler, Context context, TextureMovieEncoder videoEncoder) {
         mSurfaceHandler = handler;
@@ -123,14 +116,9 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
         mFinalMatrix = mModelMatrix.clone();
         Matrix.multiplyMM(mMVPMatrix, 0, mFinalMatrix, 0, mMVPMatrix, 0);
-
-        //squareWithMemeTexture.draw(mMVPMatrix);
-        //squareWithMemeTexture.drawImage();
-        sprite.doDraw(mMVPMatrix);
         processRecording(mMVPMatrix);
+        sprite.doDraw(mMVPMatrix);
 
-        //drawSprite();
-        //drawBox();
     }
 
     private void processRecording(float[] mvpMatrix) {
@@ -164,15 +152,6 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
     }
 
-    /*
-        private void drawBox() {
-            GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
-            GLES20.glScissor((surfaceWidth / 2) - (boxWidth / 2), (surfaceHeight / 2) - (boxHeight / 2), boxWidth, boxHeight);
-            GLES20.glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-            GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
-        }
-    */
     public static int loadShader(int type, String shaderCode) {
 
         // create a vertex shader type (GLES20.GL_VERTEX_SHADER)

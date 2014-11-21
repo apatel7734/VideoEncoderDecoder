@@ -38,9 +38,6 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private int surfaceWidth;
     private int surfaceHeight;
 
-    int boxWidth = 400;
-    int boxHeight = 400;
-
     private final float[] mMVPMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
@@ -51,6 +48,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private float[] mModelMatrix = new float[16];
     private float[] mTempMatrix = new float[16];
     private ImageSprite sprite;
+    private ImageSprite encodingSprite;
 
     //Encoder stuff
     private MyActivity.RecordingStatus mRecordingStatus = MyActivity.RecordingStatus.RECORDING_OFF;
@@ -82,6 +80,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         mSurfaceHandler.sendMessage(mSurfaceHandler.obtainMessage(SurfaceHandler.MSG_SET_SURFACE_TEXTURE, mSurfaceTexture));
         //squareWithMemeTexture = new SquareWithMemeTexture(mContext);
         sprite = new ImageSprite(mContext);
+        encodingSprite = new ImageSprite(mContext);
     }
 
     @Override
@@ -90,9 +89,9 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         surfaceHeight = height;
         surfaceWidth = width;
         float ratio = (float) width / height;
-        //Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
         GLES20.glViewport(0, 0, (int) surfaceWidth, (int) surfaceHeight);
-        Matrix.orthoM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+        //Matrix.orthoM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
         Log.d(TAG, String.format("Width = %d and Height = %d", width, height));
     }
 
@@ -128,26 +127,26 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         //squareWithMemeTexture.draw(mMVPMatrix);
         //squareWithMemeTexture.drawImage();
         sprite.doDraw(mMVPMatrix);
-        processRecording();
+        processRecording(mMVPMatrix);
+
         //drawSprite();
         //drawBox();
     }
 
-    private void processRecording() {
+    private void processRecording(float[] mvpMatrix) {
         if (!mCurrentRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_ON) && mRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_ON)) {
             mCurrentRecordingStatus = MyActivity.RecordingStatus.RECORDING_ON;
             //mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(mOutputFile, 640, 480, 1000000, EGL14.eglGetCurrentContext()));
-            mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(mOutputFile, 640, 480, 1000000, EGL14.eglGetCurrentContext(), sprite));
+            mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(mOutputFile, 640, 480, 1000000, EGL14.eglGetCurrentContext(), encodingSprite));
             Log.d(TAG, "***** started recording *****");
         } else if (!mCurrentRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_OFF) && mRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_OFF)) {
             mCurrentRecordingStatus = MyActivity.RecordingStatus.RECORDING_OFF;
             mVideoEncoder.stopRecording();
             Log.d(TAG, "***** stopped recording *****");
         }
-
         mVideoEncoder.setTextureId(mTextureId);
         //mVideoEncoder.frameAvailable(mSurfaceTexture);
-        mVideoEncoder.frameAvailable(mSurfaceTexture, mMVPMatrix);
+        mVideoEncoder.frameAvailable(mSurfaceTexture, mvpMatrix.clone());
     }
 
     private void setupDefaultDrawing() {

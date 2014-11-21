@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Encode a movie from frames rendered from an external texture image.
@@ -57,6 +58,7 @@ import java.util.ArrayList;
 public class TextureMovieEncoder implements Runnable {
     //private static final String TAG = MainActivity.TAG;
     private static final String TAG = "TextureMovieEncoder";
+    private static final String TAG_TEST = "TextureMovieEncoder_test";
     private static final boolean VERBOSE = false;
 
     private static final int MSG_START_RECORDING = 0;
@@ -203,16 +205,20 @@ public class TextureMovieEncoder implements Runnable {
      * stall the caller while this thread does work.
      */
 
-    private ArrayList<float[]> arrayList = new ArrayList<float[]>();
+    float[] transform = new float[16];
 
-    public void frameAvailable(SurfaceTexture st, float[] spriteMtx) {
+    private ArrayList<float[]> arrayList = new ArrayList<float[]>();
+    private long previousTimestamp = 0;
+
+/*
+    public void frameAvailable(SurfaceTexture st) {
         synchronized (mReadyFence) {
             if (!mReady) {
                 return;
             }
         }
 
-        float[] transform = new float[16];      // TODO - avoid alloc every frame
+        // TODO - avoid alloc every frame
         st.getTransformMatrix(transform);
         long timestamp = st.getTimestamp();
         if (timestamp == 0) {
@@ -224,12 +230,42 @@ public class TextureMovieEncoder implements Runnable {
             Log.w(TAG, "HEY: got SurfaceTexture with timestamp of zero");
             return;
         }
+
+        previousTimestamp = timestamp;
         Log.d(TAG, "Framenumber= " + mFrameNum++);
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, (int) (timestamp >> 32), (int) timestamp, transform));
+    }
+*/
+
+    int order = 0;
+
+    public void frameAvailable(SurfaceTexture st, float[] spriteMtx) {
+        synchronized (mReadyFence) {
+            if (!mReady) {
+                return;
+            }
+        }
+
+        // TODO - avoid alloc every frame
+        st.getTransformMatrix(transform);
+        int timestamp = (int) st.getTimestamp();
+        if (timestamp == 0) {
+            // Seeing this after device is toggled off/on with power button.  The
+            // first frame back has a zero timestamp.
+            //
+            // MPEG4Writer thinks this is cause to abort() in native code, so it's very
+            // important that we just ignore the frame.
+            Log.w(TAG, "HEY: got SurfaceTexture with timestamp of zero");
+            return;
+        }
+        //Log.d(TAG, "Framenumber= " + mFrameNum++);
         arrayList.clear();
-        arrayList.add(transform);
-        arrayList.add(spriteMtx);
+        arrayList.add(0, transform);
+        arrayList.add(1, spriteMtx);
+        order++;
+        Log.d(TAG_TEST, "Calling frameAvailable Recorded Data # 268 sprite= " + Arrays.toString(arrayList.get(1)) + " :: timestamp = " + timestamp + " :: order = " + order);
         //mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, (int) (timestamp >> 32), (int) timestamp, transform));
-        mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, (int) (timestamp >> 32), (int) timestamp, arrayList));
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, order, timestamp, arrayList));
     }
 
     /**
@@ -295,6 +331,7 @@ public class TextureMovieEncoder implements Runnable {
                 return;
             }
 
+            ArrayList<float[]> floatsList = new ArrayList<float[]>();
             switch (what) {
                 case MSG_START_RECORDING:
                     encoder.handleStartRecording((EncoderConfig) obj);
@@ -303,11 +340,25 @@ public class TextureMovieEncoder implements Runnable {
                     encoder.handleStopRecording();
                     break;
                 case MSG_FRAME_AVAILABLE:
-                    long timestamp = (((long) inputMessage.arg1) << 32) |
-                            (((long) inputMessage.arg2) & 0xffffffffL);
-                    //encoder.handleFrameAvailable((float[]) obj, timestamp);
-                    encoder.handleFrameAvailable((ArrayList<float[]>) obj, timestamp);
+                    /*
+                    long timestamp = (((long) inputMessage.arg1) << 32) | ((inputMessage.arg2) & 0xffffffffL);
+                    encoder.handleFrameAvailable((float[]) obj, timestamp);
+                    Log.d(TAG_TEST, "Handling handleMessage Recorded Data # 347 = " + Arrays.toString((float[]) obj) + " :: timestamp = " + timestamp);
+                    */
+                    //long timestamp = (((long) inputMessage.arg1) << 32) | ((inputMessage.arg2) & 0xffffffffL);
 
+                    long timestamp = inputMessage.arg2;
+                    long order = inputMessage.arg1;
+                    floatsList.clear();
+                    floatsList = (ArrayList<float[]>) obj;
+
+                    if (floatsList.size() > 1) {
+                        float[] transform = floatsList.get(0);
+                        float[] sprite = floatsList.get(1);
+                        Log.d(TAG_TEST, "Handling handleMessage Recorded Data # 347 sprite = " + Arrays.toString(sprite) + " :: timestamp = " + timestamp + " :: order = " + order);
+                        Log.d(TAG_TEST, "Handling handleMessage Recorded Data # 347 transform = " + Arrays.toString(transform) + " :: timestamp = " + timestamp + " :: order = " + order);
+                    }
+                    encoder.handleFrameAvailable(floatsList, timestamp);
                     break;
                 case MSG_SET_TEXTURE_ID:
                     encoder.handleSetTexture(inputMessage.arg1);
@@ -345,33 +396,29 @@ public class TextureMovieEncoder implements Runnable {
      * @param timestampNanos The frame's timestamp, from SurfaceTexture.
      */
     private void handleFrameAvailable(float[] transform, long timestampNanos) {
-        Log.d(TAG, "handleFrameAvailable tr=" + transform);
         mVideoEncoder.drainEncoder(false);
-
+        Log.d(TAG_TEST, "handleFrameAvailable Recorded Data # 397 = " + Arrays.toString(transform) + " :: timestamp = " + timestampNanos);
         mFullScreen.drawFrame(mTextureId, transform);
         mInputWindowSurface.setPresentationTime(timestampNanos);
-        Log.d(TAG, "Before Swapping buffers");
         mInputWindowSurface.swapBuffers();
     }
 
+    long mFrameNumb = 0;
+    long prevTimeStamp = 0;
+    //float[] temp = {-2.7021255f, 2.8291597f, 0.0f, 0.0f, 1.734513f, 1.6566303f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 3.0f};
+
     private void handleFrameAvailable(ArrayList<float[]> data, long timestampNanos) {
-        if (data.size() > 0) {
+        if ((data.size() > 1) && (prevTimeStamp <= timestampNanos)) {
             float[] transform = data.get(0);
             float[] sprite = data.get(1);
-            Log.d(TAG, "handleFrameAvailable tr=" + transform);
             mVideoEncoder.drainEncoder(false);
-
             mFullScreen.drawFrame(mTextureId, transform);
-            if (sprite != null) {
-                mSprite.doDraw(sprite);
-            }
+            mSprite.doDraw(sprite);
             mInputWindowSurface.setPresentationTime(timestampNanos);
-            Log.d(TAG, "Before Swapping buffers");
             mInputWindowSurface.swapBuffers();
+            prevTimeStamp = timestampNanos;
         }
-
     }
-
 
     /**
      * Handles a request to stop encoding.
@@ -462,6 +509,14 @@ public class TextureMovieEncoder implements Runnable {
         int xpos = (posn * 3) % (width - 50);
         GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
         GLES20.glScissor(xpos, 0, 100, 100);
+        GLES20.glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
+    }
+
+    private void drawScissorText() {
+        GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+        GLES20.glScissor(0, 0, 100, 100);
         GLES20.glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         GLES20.glDisable(GLES20.GL_SCISSOR_TEST);

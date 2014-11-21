@@ -80,15 +80,15 @@ public class MyActivity extends Activity implements MoviePlayer.PlayerFeedback, 
 
     //first clear surface to make sure
     public void startRecording(View view) {
-        Log.d(TAG, "startRecording");
+        Log.d(TAG, "***** startRecording *****");
         mMainSurfaceView.updateRecordingStatus(RecordingStatus.RECORDING_ON);
-        Toast.makeText(this,"Started..",Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Started..", Toast.LENGTH_LONG).show();
     }
 
     public void stopRecording(View view) {
-        Log.d(TAG, "stopRecording");
+        Log.d(TAG, "***** stopRecording *****");
         mMainSurfaceView.updateRecordingStatus(RecordingStatus.RECORDING_OFF);
-        Toast.makeText(this,"Stopping..",Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Stopping..", Toast.LENGTH_LONG).show();
     }
 
     @Override

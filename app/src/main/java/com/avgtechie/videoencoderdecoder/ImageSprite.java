@@ -17,19 +17,20 @@ import java.nio.ShortBuffer;
 public class ImageSprite {
 
     //Added for Textures
-    private FloatBuffer mCubeTextureCoordinates;
+    private FloatBuffer mTextureCoordinatesBuffer;
     private int mTextureUniformHandle;
     private int mTextureCoordinateHandle;
     private final int mTextureCoordinateDataSize = 2;
     private int mTextureDataHandle;
 
+    //"gl_Position = vPosition * uMVPMatrix;" +
     private final String vertexShaderCode =
             "attribute vec2 a_TexCoordinate;" +
                     "varying vec2 v_TexCoordinate;" +
                     "uniform mat4 uMVPMatrix;" +
                     "attribute vec4 vPosition;" +
                     "void main() {" +
-                    "  gl_Position = vPosition * uMVPMatrix;" +
+                    "gl_Position = uMVPMatrix * vPosition;" +
                     "v_TexCoordinate = a_TexCoordinate;" +
                     "}";
 
@@ -61,11 +62,19 @@ public class ImageSprite {
 
     final float[] textureCoordinates =
             {
+
                     //Front face
                     0.0f, 0.0f, // TexCoord 0
                     0.0f, 1.0f, // TexCoord 1
                     1.0f, 1.0f, // TexCoord 2
                     1.0f, 0.0f // TexCoord 3
+
+                    /*
+                    -1.0f, -1.0f, 0.0f,
+                    -1.0f, 1.0f, 0.0f,
+                    1.0f, -1.0f, 0.0f,
+                    1.0f, 1.0f, 0.0f
+                    */
             };
 
     private short drawOrder[] = {0, 1, 2, 0, 2, 3}; //Order to draw vertices
@@ -98,8 +107,8 @@ public class ImageSprite {
         // OpenGL has a Y axis pointing upward, we adjust for that here by flipping the Y axis.
         // What's more is that the texture coordinates are the same for every face.
 
-        mCubeTextureCoordinates = ByteBuffer.allocateDirect(textureCoordinates.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mCubeTextureCoordinates.put(textureCoordinates).position(0);
+        mTextureCoordinatesBuffer = ByteBuffer.allocateDirect(textureCoordinates.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mTextureCoordinatesBuffer.put(textureCoordinates).position(0);
 
         //Initialize byte buffer for the draw list
         ByteBuffer dlb = ByteBuffer.allocateDirect(spriteCoords.length * 2);
@@ -157,8 +166,8 @@ public class ImageSprite {
         GLES20.glUniform1i(mTextureUniformHandle, 0);
 
         //Pass in the texture coordinate information
-        mCubeTextureCoordinates.position(0);
-        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, mTextureCoordinateDataSize, GLES20.GL_FLOAT, false, 0, mCubeTextureCoordinates);
+        mTextureCoordinatesBuffer.position(0);
+        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, mTextureCoordinateDataSize, GLES20.GL_FLOAT, false, 0, mTextureCoordinatesBuffer);
         GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
 
         //Get Handle to Shape's Transformation Matrix

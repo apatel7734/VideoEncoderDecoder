@@ -1,6 +1,5 @@
 package com.avgtechie.videoencoderdecoder;
 
-import android.content.Context;
 import android.opengl.GLES20;
 
 import java.nio.ByteBuffer;
@@ -43,21 +42,22 @@ public class SquareWithMemeTexture {
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
     static float squareCoords[] = {
-            -0.5f, 0.5f, 0.0f,   // top left
-            -0.5f, -0.5f, 0.0f,   // bottom left
-            0.5f, -0.5f, 0.0f,   // bottom right
-            0.5f, 0.5f, 0.0f}; // top right
+            -1.0f, 1.0f, 0.0f,   // top left
+            -1.0f, -1.0f, 0.0f,   // bottom left
+            1.0f, -1.0f, 0.0f,   // bottom right
+            1.0f, 1.0f, 0.0f}; // top right
 
     private final short drawOrder[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
 
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
 
-    float color[] = {0.2f, 0.709803922f, 0.898039216f, 1.0f};
+    //float color[] = {0.2f, 0.709803922f, 0.898039216f, 1.0f};
+    float color[] = {0.0f, 0.0f, 0.0f, 1.0f};
 
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
-    public SquareWithMemeTexture(Context context) {
+    public SquareWithMemeTexture() {
         initSolidColors();
     }
 

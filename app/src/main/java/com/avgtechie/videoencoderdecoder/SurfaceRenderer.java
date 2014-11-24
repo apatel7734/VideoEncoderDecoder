@@ -21,6 +21,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = "SurfaceRenderer";
 
     private FullFrameRect mFullScreen;
+    private SquareWithMemeTexture mFullScreenDummy;
     private int mTextureId;
     private SurfaceTexture mSurfaceTexture;
     private SurfaceHandler mSurfaceHandler;
@@ -41,7 +42,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     private final float[] mViewMatrix = new float[16];
     private final float[] mRotationMatrix = new float[16];
     private final float[] mScaleMatrix = new float[16];
-    private final float[] mTranslationMatrix = new float[16];
+    private float[] mBackgorundMatrix = new float[16];
     private float[] mFinalMatrix = new float[16];
     private float[] mModelMatrix = new float[16];
     private float[] mTempMatrix = new float[16];
@@ -67,7 +68,9 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Log.d(TAG, "onSurfaceCreated");
+
         mFullScreen = new FullFrameRect(new Texture2dProgram(Texture2dProgram.ProgramType.TEXTURE_EXT));
+        mFullScreenDummy = new SquareWithMemeTexture();
         mTextureId = mFullScreen.createTextureObject();
         mSurfaceTexture = new SurfaceTexture(mTextureId);
         mSurfaceHandler.sendMessage(mSurfaceHandler.obtainMessage(SurfaceHandler.MSG_SET_SURFACE_TEXTURE, mSurfaceTexture));
@@ -88,12 +91,12 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         Log.d(TAG, String.format("Width = %d and Height = %d", width, height));
     }
 
-
     @Override
     public void onDrawFrame(GL10 gl) {
 
         setupDefaultDrawing();
-
+        mBackgorundMatrix = mMVPMatrix.clone();
+        mFullScreenDummy.draw(mBackgorundMatrix);
         // draw decoded frame on surfacetexture
         mSurfaceTexture.updateTexImage();
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
@@ -134,7 +137,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         }
         mVideoEncoder.setTextureId(mTextureId);
         //mVideoEncoder.frameAvailable(mSurfaceTexture);
-        mVideoEncoder.frameAvailable(mSurfaceTexture, mvpMatrix.clone());
+        mVideoEncoder.frameAvailable(mSurfaceTexture, mvpMatrix.clone(), mBackgorundMatrix);
     }
 
     private void setupDefaultDrawing() {

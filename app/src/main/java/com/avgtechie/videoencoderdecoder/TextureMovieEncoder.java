@@ -70,6 +70,7 @@ public class TextureMovieEncoder implements Runnable {
     private WindowSurface mInputWindowSurface;
     private EglCore mEglCore;
     private FullFrameRect mFullScreen;
+    private SquareWithMemeTexture mFullScreenDummy;
     private int mTextureId;
     private VideoEncoderCore mVideoEncoder;
 
@@ -224,7 +225,7 @@ public class TextureMovieEncoder implements Runnable {
 
     */
 
-    public void frameAvailable(SurfaceTexture st, float[] spriteMtx) {
+    public void frameAvailable(SurfaceTexture st, float[] spriteMtx, float[] mBackgorundMatrix) {
         synchronized (mReadyFence) {
             if (!mReady) {
                 return;
@@ -248,6 +249,7 @@ public class TextureMovieEncoder implements Runnable {
         arrayList.clear();
         arrayList.add(0, transform);
         arrayList.add(1, spriteMtx);
+        arrayList.add(2, mBackgorundMatrix);
         //mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, (int) (timestamp >> 32), (int) timestamp, transform));
         previousTimestamp = timestamp;
         mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE, (int) (timestamp >> 32), (int) timestamp, arrayList));
@@ -377,14 +379,16 @@ public class TextureMovieEncoder implements Runnable {
         mInputWindowSurface.swapBuffers();
     }
 
-
     private void handleFrameAvailableNew(ArrayList<float[]> data, long timestampNanos) {
         mVideoEncoder.drainEncoder(false);
-        if (data.size() < 2) {
+        if (data.size() < 3) {
             return;
         }
         float[] transform = data.get(0);
         float[] sprite = data.get(1);
+        float[] dummyData = data.get(2);
+        Log.d(TAG, "dummy Data = " + dummyData);
+        mFullScreenDummy.draw(dummyData);
         Log.d(TAG, "handleFrameAvailable Recorded Data # 397 = " + Arrays.toString(transform) + " :: timestamp = " + timestampNanos);
         mFullScreen.drawFrame(mTextureId, transform);
         mSprite.doDraw(sprite);
@@ -446,6 +450,7 @@ public class TextureMovieEncoder implements Runnable {
 
         // Create new programs and such for the new context.
         mFullScreen = new FullFrameRect(new Texture2dProgram(Texture2dProgram.ProgramType.TEXTURE_EXT));
+
     }
 
     private void prepareEncoder(EGLContext sharedContext, int width, int height, int bitRate, File outputFile) {
@@ -459,6 +464,7 @@ public class TextureMovieEncoder implements Runnable {
         mInputWindowSurface.makeCurrent();
 
         mFullScreen = new FullFrameRect(new Texture2dProgram(Texture2dProgram.ProgramType.TEXTURE_EXT));
+        mFullScreenDummy = new SquareWithMemeTexture();
     }
 
     private void releaseEncoder() {

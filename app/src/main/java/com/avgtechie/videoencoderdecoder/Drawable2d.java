@@ -48,16 +48,26 @@ public class Drawable2d {
      * Triangles are 0-1-2 and 2-1-3 (counter-clockwise winding).
      */
     private static final float RECTANGLE_COORDS[] = {
-            -0.5f, -0.5f,   // 0 bottom left
-            0.5f, -0.5f,   // 1 bottom right
-            -0.5f, 0.5f,   // 2 top left
-            0.5f, 0.5f,   // 3 top right
+//            -0.5f, -0.5f,   // 0 bottom left
+//            0.5f, -0.5f,   // 1 bottom right
+//            -0.5f, 0.5f,   // 2 top left
+//            0.5f, 0.5f,   // 3 top right
+
+            -1.0f, -0.5f,   // 0 bottom left
+            1.0f, -0.5f,   // 1 bottom right
+            -1.0f, 0.5f,   // 2 top left
+            1.0f, 0.5f,   // 3 top right
     };
     private static final float RECTANGLE_TEX_COORDS[] = {
-            0.0f, 1.0f,     // 0 bottom left
-            1.0f, 1.0f,     // 1 bottom right
-            0.0f, 0.0f,     // 2 top left
-            1.0f, 0.0f      // 3 top right
+//            0.0f, 1.0f,     // 0 bottom left
+//            1.0f, 1.0f,     // 1 bottom right
+//            0.0f, 0.0f,     // 2 top left
+//            1.0f, 0.0f      // 3 top right
+
+            0.0f, 0.0f,     // 0 bottom left
+            1.0f, 0.0f,     // 1 bottom right
+            0.0f, 1.0f,     // 2 top left
+            1.0f, 1.0f      // 3 top right
     };
     private static final FloatBuffer RECTANGLE_BUF = GlUtil.createFloatBuffer(RECTANGLE_COORDS);
     private static final FloatBuffer RECTANGLE_TEX_BUF = GlUtil.createFloatBuffer(RECTANGLE_TEX_COORDS);

@@ -4,7 +4,7 @@ package com.avgtechie.videoencoderdecoder;
  * Created by ashish on 11/12/14.
  */
 public class FullFrameRect {
-    private final Drawable2d mRectDrawable = new Drawable2d(Drawable2d.Prefab.FULL_RECTANGLE);
+    private final Drawable2d mRectDrawable = new Drawable2d(Drawable2d.Prefab.RECTANGLE);
     private Texture2dProgram mProgram;
 
     /**

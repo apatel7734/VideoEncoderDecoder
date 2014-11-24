@@ -17,7 +17,7 @@ public class MyActivity extends Activity implements MoviePlayer.PlayerFeedback, 
     private MainSurfaceView mMainSurfaceView;
     private MoviePlayer.PlayTask mPlayTask;
 
-    private static TextureMovieEncoder mVideoEncoder = new TextureMovieEncoder();
+    //private static TextureMovieEncoder mVideoEncoder = new TextureMovieEncoder();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

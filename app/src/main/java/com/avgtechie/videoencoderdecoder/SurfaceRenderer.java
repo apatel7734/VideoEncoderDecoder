@@ -100,7 +100,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         // draw decoded frame on surfacetexture
         mSurfaceTexture.updateTexImage();
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
-        mFullScreen.drawFrame(mTextureId, mSTMatrix);
+        //mFullScreen.drawFrame(mTextureId, mSTMatrix, mModelMatrix);
 
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.translateM(mModelMatrix, 0, (mX / surfaceWidth), -(mY / surfaceHeight), 0);
@@ -119,10 +119,13 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
         mFinalMatrix = mModelMatrix.clone();
         Matrix.multiplyMM(mMVPMatrix, 0, mFinalMatrix, 0, mMVPMatrix, 0);
-        processRecording(mMVPMatrix);
-        sprite.doDraw(mMVPMatrix);
 
+        mFullScreen.drawFrame(mTextureId, mSTMatrix, mModelMatrix);
+        processRecording(mMVPMatrix);
+//        sprite.doDraw(mMVPMatrix);
     }
+
+
 
     private void processRecording(float[] mvpMatrix) {
         if (!mCurrentRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_ON) && mRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_ON)) {

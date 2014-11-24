@@ -361,6 +361,8 @@ public class TextureMovieEncoder implements Runnable {
         mSprite = config.imgSprite;
     }
 
+    float[] rect = new float[16];
+
     /**
      * Handles notification of an available frame.
      * <p/>
@@ -374,7 +376,7 @@ public class TextureMovieEncoder implements Runnable {
     private void handleFrameAvailable(float[] transform, long timestampNanos) {
         mVideoEncoder.drainEncoder(false);
         Log.d(TAG, "handleFrameAvailable Recorded Data # 397 = " + Arrays.toString(transform) + " :: timestamp = " + timestampNanos);
-        mFullScreen.drawFrame(mTextureId, transform);
+        mFullScreen.drawFrame(mTextureId, transform, null);
         mInputWindowSurface.setPresentationTime(timestampNanos);
         mInputWindowSurface.swapBuffers();
     }
@@ -390,7 +392,7 @@ public class TextureMovieEncoder implements Runnable {
         Log.d(TAG, "dummy Data = " + dummyData);
         mFullScreenDummy.draw(dummyData);
         Log.d(TAG, "handleFrameAvailable Recorded Data # 397 = " + Arrays.toString(transform) + " :: timestamp = " + timestampNanos);
-        mFullScreen.drawFrame(mTextureId, transform);
+        mFullScreen.drawFrame(mTextureId, transform, rect);
         mSprite.doDraw(sprite);
         mInputWindowSurface.setPresentationTime(timestampNanos);
         mInputWindowSurface.swapBuffers();
@@ -403,7 +405,7 @@ public class TextureMovieEncoder implements Runnable {
             float[] transform = data.get(0);
             float[] sprite = data.get(1);
             mVideoEncoder.drainEncoder(false);
-            mFullScreen.drawFrame(mTextureId, transform);
+            mFullScreen.drawFrame(mTextureId, transform, rect);
             mSprite.doDraw(sprite);
             mInputWindowSurface.setPresentationTime(timestampNanos);
             mInputWindowSurface.swapBuffers();

@@ -100,7 +100,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         mFullScreen.drawFrame(mTextureId, mSTMatrix);
 
         Matrix.setIdentityM(mModelMatrix, 0);
-        //Matrix.translateM(mModelMatrix, 0, mX / surfaceWidth, -mY / surfaceHeight, 0);
+        Matrix.translateM(mModelMatrix, 0, (mX / surfaceWidth), -(mY / surfaceHeight), 0);
 
 
         Matrix.setRotateM(mRotationMatrix, 0, mRotationDegrees, 0, 0, -1.0f);

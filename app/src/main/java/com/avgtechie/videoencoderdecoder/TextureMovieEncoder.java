@@ -25,7 +25,6 @@ import android.os.Message;
 import android.util.Log;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
@@ -432,7 +431,7 @@ public class TextureMovieEncoder implements Runnable {
     private void prepareEncoder(EGLContext sharedContext, int width, int height, int bitRate, File outputFile) {
         try {
             mVideoEncoder = new VideoEncoderCore(width, height, bitRate, outputFile);
-        } catch (IOException ioe) {
+        } catch (Exception ioe) {
             throw new RuntimeException(ioe);
         }
         mEglCore = new EglCore(sharedContext, EglCore.FLAG_RECORDABLE);

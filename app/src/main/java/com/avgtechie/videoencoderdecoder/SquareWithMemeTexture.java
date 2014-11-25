@@ -51,8 +51,8 @@ public class SquareWithMemeTexture {
 
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
 
-    float color[] = {0.2f, 0.709803922f, 0.898039216f, 1.0f};
-    //float color[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    //float color[] = {0.2f, 0.709803922f, 0.898039216f, 1.0f};
+    float color[] = {0.0f, 0.0f, 0.0f, 1.0f};
 
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.

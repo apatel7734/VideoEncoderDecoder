@@ -130,7 +130,7 @@ public class ImageSprite {
         GLES20.glLinkProgram(shaderProgram);
 
         //Load the texture
-        mTextureDataHandle = loadTexture(mContext, R.drawable.ic_launcher);
+        mTextureDataHandle = loadTexture(mContext, R.drawable.lance_stevenson);
     }
 
     public void doDraw(float[] mvpMatrix) {
@@ -139,7 +139,8 @@ public class ImageSprite {
 
         //Get handle to vertex shader's vPosition member
         mPositionHandle = GLES20.glGetAttribLocation(shaderProgram, "vPosition");
-
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glEnable(GLES20.GL_BLEND);
         //Enable a handle to the triangle vertices
         GLES20.glEnableVertexAttribArray(mPositionHandle);
 

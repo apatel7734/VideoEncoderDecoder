@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Encode a movie from frames rendered from an external texture image.
@@ -70,7 +69,7 @@ public class TextureMovieEncoder implements Runnable {
     private WindowSurface mInputWindowSurface;
     private EglCore mEglCore;
     private FullFrameRect mFullScreen;
-    private SquareWithMemeTexture mFullScreenDummy;
+    private SquareWithMemeTexture mFullRectBackground;
     private int mTextureId;
     private VideoEncoderCore mVideoEncoder;
 
@@ -335,7 +334,7 @@ public class TextureMovieEncoder implements Runnable {
                     floatsList = (ArrayList<float[]>) obj;
                     Log.d(TAG, "Handle Frame : timestamp = " + timestamp);
                     //encoder.handleFrameAvailable((float[]) obj, timestamp);
-                    encoder.handleFrameAvailableNew(floatsList, timestamp);
+                    encoder.handleFrameAvailable(floatsList, timestamp);
                     break;
                 case MSG_SET_TEXTURE_ID:
                     encoder.handleSetTexture(inputMessage.arg1);
@@ -370,47 +369,22 @@ public class TextureMovieEncoder implements Runnable {
      * box (just because we can).
      * <p/>
      *
-     * @param transform      The texture transform, from SurfaceTexture.
+     * @param data           The texture transform, from SurfaceTexture.
      * @param timestampNanos The frame's timestamp, from SurfaceTexture.
      */
-    private void handleFrameAvailable(float[] transform, long timestampNanos) {
-        mVideoEncoder.drainEncoder(false);
-        Log.d(TAG, "handleFrameAvailable Recorded Data # 397 = " + Arrays.toString(transform) + " :: timestamp = " + timestampNanos);
-        mFullScreen.drawFrame(mTextureId, transform, null);
-        mInputWindowSurface.setPresentationTime(timestampNanos);
-        mInputWindowSurface.swapBuffers();
-    }
-
-    private void handleFrameAvailableNew(ArrayList<float[]> data, long timestampNanos) {
+    private void handleFrameAvailable(ArrayList<float[]> data, long timestampNanos) {
         mVideoEncoder.drainEncoder(false);
         if (data.size() < 3) {
             return;
         }
         float[] transform = data.get(0);
         float[] sprite = data.get(1);
-        float[] dummyData = data.get(2);
-        Log.d(TAG, "dummy Data = " + dummyData);
-        mFullScreenDummy.draw(dummyData);
-        Log.d(TAG, "handleFrameAvailable Recorded Data # 397 = " + Arrays.toString(transform) + " :: timestamp = " + timestampNanos);
+        float[] backgrdMtrx = data.get(2);
+        mFullRectBackground.draw(backgrdMtrx);
         mFullScreen.drawFrame(mTextureId, transform, rect);
         mSprite.doDraw(sprite);
         mInputWindowSurface.setPresentationTime(timestampNanos);
         mInputWindowSurface.swapBuffers();
-    }
-
-    long prevTimeStamp = 0;
-
-    private void handleFrameAvailable(ArrayList<float[]> data, long timestampNanos) {
-        if ((data.size() > 1) && (prevTimeStamp <= timestampNanos)) {
-            float[] transform = data.get(0);
-            float[] sprite = data.get(1);
-            mVideoEncoder.drainEncoder(false);
-            mFullScreen.drawFrame(mTextureId, transform, rect);
-            mSprite.doDraw(sprite);
-            mInputWindowSurface.setPresentationTime(timestampNanos);
-            mInputWindowSurface.swapBuffers();
-            prevTimeStamp = timestampNanos;
-        }
     }
 
     /**
@@ -466,7 +440,7 @@ public class TextureMovieEncoder implements Runnable {
         mInputWindowSurface.makeCurrent();
 
         mFullScreen = new FullFrameRect(new Texture2dProgram(Texture2dProgram.ProgramType.TEXTURE_EXT));
-        mFullScreenDummy = new SquareWithMemeTexture();
+        mFullRectBackground = new SquareWithMemeTexture();
     }
 
     private void releaseEncoder() {

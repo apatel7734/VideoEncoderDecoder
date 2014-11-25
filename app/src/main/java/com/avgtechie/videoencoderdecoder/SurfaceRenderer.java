@@ -91,6 +91,10 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         Log.d(TAG, String.format("Width = %d and Height = %d", width, height));
     }
 
+    float posX;
+    float posY;
+    float translationFactor = 1.5f;
+
     @Override
     public void onDrawFrame(GL10 gl) {
 
@@ -98,12 +102,14 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
         mBackgorundMatrix = mMVPMatrix.clone();
         mFullScreenDummy.draw(mBackgorundMatrix);
         // draw decoded frame on surfacetexture
+        Matrix.setIdentityM(mModelMatrix, 0);
         mSurfaceTexture.updateTexImage();
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
-        //mFullScreen.drawFrame(mTextureId, mSTMatrix, mModelMatrix);
+        mFullScreen.drawFrame(mTextureId, mSTMatrix, mModelMatrix);
 
-        Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.translateM(mModelMatrix, 0, (mX / surfaceWidth), -(mY / surfaceHeight), 0);
+        posX = mX / surfaceWidth;
+        posY = mY / surfaceHeight;
+        Matrix.translateM(mModelMatrix, 0, (posX * translationFactor), -(posY * translationFactor), 0);
 
 
         Matrix.setRotateM(mRotationMatrix, 0, mRotationDegrees, 0, 0, -1.0f);
@@ -119,19 +125,16 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
         mFinalMatrix = mModelMatrix.clone();
         Matrix.multiplyMM(mMVPMatrix, 0, mFinalMatrix, 0, mMVPMatrix, 0);
-
-        mFullScreen.drawFrame(mTextureId, mSTMatrix, mModelMatrix);
         processRecording(mMVPMatrix);
-//        sprite.doDraw(mMVPMatrix);
+        sprite.doDraw(mMVPMatrix);
     }
-
 
 
     private void processRecording(float[] mvpMatrix) {
         if (!mCurrentRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_ON) && mRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_ON)) {
             mCurrentRecordingStatus = MyActivity.RecordingStatus.RECORDING_ON;
             //mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(mOutputFile, 640, 480, 1000000, EGL14.eglGetCurrentContext()));
-            mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(mOutputFile, 640, 480, 1000000, EGL14.eglGetCurrentContext(), encodingSprite));
+            mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(mOutputFile, surfaceWidth, surfaceHeight, 1000000, EGL14.eglGetCurrentContext(), encodingSprite));
             Log.d(TAG, "***** started recording *****");
         } else if (!mCurrentRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_OFF) && mRecordingStatus.equals(MyActivity.RecordingStatus.RECORDING_OFF)) {
             mCurrentRecordingStatus = MyActivity.RecordingStatus.RECORDING_OFF;
